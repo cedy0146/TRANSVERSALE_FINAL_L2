@@ -1,0 +1,40 @@
+{
+  "name": "electrimada",
+  "version": "1.0.0",
+  "main": "backend/src/server.js",
+  "scripts": {
+    "start": "node backend/src/server.js",
+    "dev": "nodemon backend/src/server.js",
+    "test": "jest --verbose"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "helmet": "^7.0.0",
+    "joi": "^17.9.2",
+    "jsonwebtoken": "^9.0.0",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.3.3",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.22",
+    "supertest": "^6.3.3"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "ElectriMada est une solution complète pour la gestion et le monitoring des ressources énergétiques, visant à optimiser la distribution et la consommation.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cedy0146/TRANSVERSALE_FINAL_L2.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/cedy0146/TRANSVERSALE_FINAL_L2/issues"
+  },
+  "homepage": "https://github.com/cedy0146/TRANSVERSALE_FINAL_L2#readme"
+}

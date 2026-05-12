@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# IDE / OS
+.DS_Store
+.vscode/
+
+# Build
+dist/
+build/
+
+# React Native / Android
+android/build/
+android/app/build/
+ios/build/
+.gradle/
+
+# APK
+*.apk
+
+# Logs
+*.log

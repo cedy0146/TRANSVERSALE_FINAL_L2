@@ -1,0 +1,26 @@
+export const STRINGS = {
+  fr: {
+    dashboard: 'Tableau de bord',
+    refresh: 'Actualiser',
+    kpi_battery: 'Énergie stockée',
+    kpi_foyers: 'Foyers enregistrés',
+    kpi_demandes: 'Demandes en attente',
+    kpi_rapports: 'Rapports générés',
+    empty_wait: 'En attente...',
+  },
+  mg: {
+    dashboard: 'Takelaka',
+    refresh: 'Manavao',
+    kpi_battery: 'Angovo voatahiry',
+    kpi_foyers: 'Trano voarakitra',
+    kpi_demandes: 'Mangataka mbola miandry',
+    kpi_rapports: 'Tatitra noforonina',
+    empty_wait: 'Miandry...',
+  },
+};
+
+export function t(lang, key) {
+  const l = STRINGS[lang] ? lang : 'fr';
+  return STRINGS[l][key] || STRINGS.fr[key] || key;
+}
+
