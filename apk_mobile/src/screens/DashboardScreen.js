@@ -50,8 +50,8 @@ export default function DashboardScreen() {
         {/* Status bar */}
         <View style={[s.statusBar, { backgroundColor: theme.bgCard, borderColor: theme.border, marginBottom: gap }]}>
           <View style={[s.dot, { backgroundColor: theme.accentGreen }]} />
-          <Text style={[s.statusTxt, { color: theme.accentGreen }]}>{t(lang, 'system_online')}</Text>
-          <Text style={[s.statusSub, { color: theme.textMuted }]}>  ·  ELECTRIMADA v2</Text>
+          <Text style={[s.statusTxt, { color: theme.accentGreen }]}>{t(lang, 'Bienvenue dans  ')}</Text>
+          <Text style={[s.statusSub, { color: theme.textMuted }]}>  ·  ELECTRIMADA </Text>
         </View>
  
         {/* KPI Grid — 2 colonnes */}
@@ -76,7 +76,7 @@ export default function DashboardScreen() {
                 return (
                   <View key={String(b.id)} style={[s.battRow, { borderBottomColor: theme.border }]}>
                     <View style={s.battTop}>
-                      <Text style={[s.battName, { color: theme.textPrimary }]}>{b.nom || `Batterie #${b.id}`}</Text>
+                      <Text style={[s.battName, { color: theme.textPrimary }]}>{b.nom || `Batterie ${b.id}`}</Text>
                       <Text style={[s.battPct, { color: isLow ? theme.accentRed : theme.accentGreen }]}>
                         {fmtPct(act, cap)} {isLow ? '⚠️' : ''}
                       </Text>
