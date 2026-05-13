@@ -51,6 +51,18 @@ const api = axios.create({
   },
 });
 
+// ─── Intercepteur pour ajouter le token JWT ──────────────
+api.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem('userToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // ─── Intercepteur pour déboguer les erreurs réseau ──────────────
 api.interceptors.response.use(
   (response) => response,

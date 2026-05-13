@@ -27,7 +27,7 @@ const Foyer = {
     const [rows] = await db.query('SELECT * FROM Foyer');
     return rows.map(row => ({
       ...row,
-      consommation_historique: JSON.parse(row.consommation_historique)
+      consommation_historique: JSON.parse(row.consommation_historique || '[]')
     }));
   },
 
@@ -39,7 +39,13 @@ const Foyer = {
   findById: async (id) => {
     const [rows] = await db.execute('SELECT * FROM Foyer WHERE id = ?', [id]);
     if (rows.length === 0) return undefined;
-    return { ...rows[0], consommation_historique: JSON.parse(rows[0].consommation_historique) };
+    return { ...rows[0], consommation_historique: (() => {
+  try {
+    return JSON.parse(rows[0].consommation_historique || '[]');
+  } catch (e) {
+    return [];
+  }
+})() };
   },
 
   /**

@@ -82,6 +82,7 @@
         <select class="form-control" id="reg-role">
           <option value="VILLAGEOIS">Villageois</option>
           <option value="RESPONSABLE">Responsable</option>
+          <option value="ADMIN">Admin</option>
         </select>
       </div>
       <button type="submit" class="btn btn-success" id="btn-register" style="width:100%;margin-top:8px;padding:12px;">
@@ -90,7 +91,7 @@
     </form>
 
     <p style="text-align:center;margin-top:20px;font-size:0.8rem;color:var(--text-muted);">
-      ElectriMada © 2025 — ESMIA Innovation
+      ElectriMada © 2025 - Tous droits réservés.
     </p>
   </div>
 </div>

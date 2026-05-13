@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // ─── Palettes ────────────────────────────────────────────────────────────────
 const DARK = {
@@ -97,6 +97,7 @@ const AppContext = createContext(null);
 export function AppProvider({ children }) {
   const [isDark, setIsDark] = useState(true);
   const [lang, setLang] = useState('fr');
+  const [user, setUser] = useState(null); // Stockage de l'utilisateur et de son rôle
 
   const theme = isDark ? DARK : LIGHT;
 
@@ -105,6 +106,8 @@ export function AppProvider({ children }) {
       value={{
         theme,
         isDark,
+        user,
+        setUser,
 
         toggleTheme: () => setIsDark(v => !v),
 

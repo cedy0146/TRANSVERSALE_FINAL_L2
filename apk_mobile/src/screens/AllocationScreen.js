@@ -1,48 +1,70 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { safePost, safeGet } from '../services/api';
+import offlineService from '../services/offlineService';
 import AppHeader from '../components/ui/AppHeader';
 import SectionCard from '../components/ui/SectionCard';
 import PrimaryButton from '../components/ui/PrimaryButton';
 import ProgressBar from '../components/ui/ProgressBar';
-import { fmtKwh } from '../utils/format';
+import { fmtKwh, fmtDate } from '../utils/format';
 import { t } from '../i18n/strings';
 
 export default function AllocationScreen() {
-  const { theme, lang } = useApp();
+  const { theme, lang, user } = useApp();
   const [running, setRunning] = useState(false);
   const [comparing, setComparing] = useState(false);
   const [forecasting, setForecasting] = useState(false);
   const [allocResult, setAllocResult] = useState(null);
   const [compareResult, setCompareResult] = useState(null);
   const [forecastResult, setForecastResult] = useState(null);
+  const [testChargeResult, setTestChargeResult] = useState(null);
 
+  // Vérification du rôle pour l'interface Admin
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'RESPONSABLE';
+
+  // --- ALLOCATION OPTIMALE (Knapsack + Dijkstra) ---
   async function runAllocation() {
     setRunning(true); setAllocResult(null);
-    const r = await safePost('/api/allocation/lancer', {});
+    // Appel à la route réelle qui utilise Knapsack en backend
+    const r = await safePost('/allocation/optimale', {}); 
     setRunning(false);
     if (r.ok) setAllocResult(r.data);
     else Alert.alert(t(lang,'error'), r.error);
   }
 
+  // --- COMPARAISON DES ALGORITHMES (FIFO vs Egalitaire vs Knapsack) ---
   async function runCompare() {
     setComparing(true); setCompareResult(null);
-    const r = await safeGet('/api/allocation/comparer');
+    const r = await safeGet('/comparaison');
     setComparing(false);
     if (r.ok) setCompareResult(r.data);
-    else Alert.alert(t(lang,'error'), r.error);
+    else {
+      // Fallback offline-first si le réseau échoue
+      const cached = await offlineService.getComparaison();
+      if (cached.data) setCompareResult(cached.data);
+      else Alert.alert(t(lang,'error'), r.error);
+    }
   }
 
+  // --- TEST DE CHARGE (Simulation 500+ demandes) ---
+  async function runLoadTest() {
+    Alert.alert("Simulation", "Lancement du test de charge (500 demandes)...");
+    const r = await safePost('/test-charge', { nb_demandes: 500, nb_iterations: 5 });
+    if (r.ok) setTestChargeResult(r.data);
+  }
+
+  // --- PRÉVISION SOLAIRE (Moving Average) ---
   async function runForecast() {
-    setForecasting(true); setForecastResult(null);
-    // Envoie des données historiques fictives pour la démo
-    const historique = [10,12,9,11,13,10,12,14,11,10,9,13,12,11,10];
-    const r = await safePost('/api/allocation/prevision-solaire', { historique });
+    setForecasting(true);
+    setForecastResult(null);
+
+    const r = await offlineService.getPrevisionMeteo();
+
     setForecasting(false);
-    if (r.ok) setForecastResult(r.data);
-    else Alert.alert(t(lang,'error'), r.error);
+    if (r.data) setForecastResult(r.data);
+    else Alert.alert(t(lang,'error'), "Données indisponibles");
   }
 
   const satisfaction = (accepted, total) => total>0 ? Math.round((accepted/total)*100) : 0;
@@ -51,14 +73,15 @@ export default function AllocationScreen() {
     <View style={[s.root,{backgroundColor:theme.bgPrimary}]}>
       <AppHeader title={t(lang,'allocation')} />
       <ScrollView contentContainerStyle={s.content}>
-
+        
+        {/* L'interface utilisateur simple ne voit que les prévisions et les recommandations */}
+        
+        {isAdmin && (
+          <>
         {/* ── Knapsack Allocation ── */}
         <SectionCard title={`🧠 ${t(lang,'alloc_knapsack')}`}>
-          <Text style={[s.desc,{color:theme.textSecondary}]}>
-            {lang==='mg'
-              ? "Manokana angovo amin'ny fomba tsara indrindra amin'ny alalan'ny algoritma knapsack."
-              : "Optimise la distribution d'énergie avec l'algorithme knapsack pour maximiser la satisfaction."}
-          </Text>
+          <Text style={[s.desc,{color:theme.textSecondary}]}>{t(lang,'alloc_knapsack_desc')}</Text>
+          
           <PrimaryButton
             title={running ? t(lang,'alloc_running') : t(lang,'alloc_run')}
             onPress={runAllocation} loading={running} style={{marginTop:12}}
@@ -66,12 +89,12 @@ export default function AllocationScreen() {
 
           {allocResult && (
             <View style={[s.resultBox,{backgroundColor:theme.bgHover,borderColor:theme.border}]}>
-              <Text style={[s.resultTitle,{color:theme.accentBlue}]}>✅ {t(lang,'alloc_result')}</Text>
+              <Text style={[s.resultTitle,{color:theme.accentGreen}]}>✅ {t(lang,'alloc_result')}</Text>
               <View style={s.kpiRow}>
                 {[
-                  {label:t(lang,'alloc_accepted'),val:allocResult.acceptees?.length??allocResult.demandes_acceptees??'—',c:theme.accentBlue},
-                  {label:t(lang,'alloc_rejected'),val:allocResult.refusees?.length??allocResult.demandes_refusees??'—',c:theme.accentPink},
-                  {label:t(lang,'alloc_kwh_total'),val:fmtKwh(Number(allocResult.total_kwh_alloue)||0),c:theme.accentCyan},
+                  {label:t(lang,'alloc_accepted'),val:allocResult.nb_acceptees??'0',c:theme.accentGreen},
+                  {label:t(lang,'alloc_rejected'),val:allocResult.nb_rejetees??'0',c:theme.accentRed},
+                  {label:t(lang,'alloc_kwh_total'),val:fmtKwh(allocResult.energie_allouee_kwh||0),c:theme.accentTeal},
                 ].map((k,i)=>(
                   <View key={i} style={[s.miniKpi,{backgroundColor:k.c+'18',borderColor:k.c}]}>
                     <Text style={[s.miniVal,{color:k.c}]}>{String(k.val)}</Text>
@@ -79,13 +102,13 @@ export default function AllocationScreen() {
                   </View>
                 ))}
               </View>
-              {allocResult.taux_satisfaction!=null && (
-                <View style={{marginTop:12}}>
-                  <View style={{flexDirection:'row',justifyContent:'space-between',marginBottom:6}}>
-                    <Text style={{color:theme.textSecondary,fontWeight:'700'}}>{t(lang,'alloc_satisfaction')}</Text>
-                    <Text style={{color:theme.accentBlue,fontWeight:'900'}}>{Math.round(allocResult.taux_satisfaction*100)||0}%</Text>
-                  </View>
-                  <ProgressBar value={Math.round(allocResult.taux_satisfaction*100)||0} max={100}/>
+              
+              {/* Visualisation Dijkstra (Chemin réseau réel) */}
+              {allocResult.chemin_reseau && (
+                <View style={s.dijkstraBox}>
+                  <Text style={[s.miniLbl,{color:theme.textPrimary, fontWeight:'700'}]}>⚡ Chemin Optimal (Dijkstra):</Text>
+                  <Text style={{color:theme.accentTeal, fontSize:11}}>{allocResult.chemin_reseau.chemin.join(' → ')}</Text>
+                  <Text style={{color:theme.textMuted, fontSize:10}}>Pertes estimées: {allocResult.chemin_reseau.distance} units</Text>
                 </View>
               )}
             </View>
@@ -93,60 +116,67 @@ export default function AllocationScreen() {
         </SectionCard>
 
         {/* ── Comparaison méthodes ── */}
-        <SectionCard title={`📊 ${t(lang,'alloc_compare')}`}>
-          <Text style={[s.desc,{color:theme.textSecondary}]}>
-            {lang==='mg'
-              ? "Ampitahao ny Knapsack amin'ny FIFO sy ny fizarana mitovy."
-              : "Compare Knapsack vs FIFO vs partage égal pour visualiser le gain de l'optimisation."}
-          </Text>
+        <SectionCard title={`📊 ${t(lang,'alloc_compare_title')}`}>
+          <Text style={[s.desc,{color:theme.textSecondary}]}>{t(lang,'alloc_compare_desc')}</Text>
+          
           <PrimaryButton title={comparing ? '...' : t(lang,'alloc_compare')}
-            onPress={runCompare} loading={comparing} variant="secondary" style={{marginTop:12}}/>
+            onPress={runCompare} loading={comparing} variant="secondary" style={s.bigBtn}/>
 
           {compareResult && (
             <View style={{marginTop:14}}>
-              {Object.entries(compareResult).map(([method, res])=>(
-                <View key={method} style={[s.compareRow,{backgroundColor:theme.bgHover,borderColor:theme.border}]}>
+              {compareResult.resultats?.map((res, idx)=>(
+                <View key={idx} style={[s.compareRow,{backgroundColor:theme.bgHover,borderColor:res.est_optimal?theme.accentGreen:theme.border}]}>
                   <View style={{flexDirection:'row',justifyContent:'space-between',marginBottom:6}}>
-                    <Text style={{color:theme.textPrimary,fontWeight:'800',textTransform:'capitalize'}}>{method}</Text>
-                    <Text style={{color:theme.accentCyan,fontWeight:'800'}}>{fmtKwh(Number(res.total_kwh||res.total_alloue)||0)}</Text>
+                    <Text style={{color:theme.textPrimary,fontWeight:'800'}}>{res.methode.toUpperCase()}</Text>
+                    {res.est_optimal && <Ionicons name="trophy" size={16} color={theme.accentGreen} />}
                   </View>
-                  <ProgressBar value={Number(res.taux||res.taux_satisfaction||0)*100} max={100} height={6}/>
-                  <Text style={{color:theme.textMuted,fontSize:11,marginTop:4}}>
-                    {t(lang,'alloc_satisfaction')}: {Math.round(Number(res.taux||res.taux_satisfaction||0)*100)}%
-                  </Text>
+                  <ProgressBar value={res.satisfaction_pct} max={100} height={8}/>
+                  <View style={s.compareStats}>
+                    <Text style={s.miniStatTxt}>Satisfaction: {res.satisfaction_pct}%</Text>
+                    <Text style={s.miniStatTxt}>Coupures évitées: {res.coupures_evitees}</Text>
+                    <Text style={[s.miniStatTxt, {color:theme.accentTeal}]}>Calcul: {res.temps_calcul_ms}ms</Text>
+                  </View>
                 </View>
               ))}
             </View>
           )}
         </SectionCard>
+          </>
+        )}
 
-        {/* ── Prévision solaire ── */}
+        {/* ── Prévision solaire (Offline-First) ── */}
         <SectionCard title={`☀️ ${t(lang,'alloc_forecast')}`}>
-          <Text style={[s.desc,{color:theme.textSecondary}]}>
-            {lang==='mg'
-              ? "Mampiasa Moving Average hanambarany ny angovo masoandro rahampitso."
-              : "Utilise la moyenne mobile pour prévoir la production solaire de demain."}
-          </Text>
+          <Text style={[s.desc,{color:theme.textSecondary}]}>{t(lang,'alloc_forecast_desc')}</Text>
+          
           <PrimaryButton title={forecasting ? '...' : t(lang,'alloc_forecast')}
-            onPress={runForecast} loading={forecasting} variant="secondary" style={{marginTop:12}}/>
+            onPress={runForecast} loading={forecasting} variant="secondary" style={s.bigBtn}/>
 
           {forecastResult && (
             <View style={{marginTop:14}}>
-              {[
-                {label:t(lang,'alloc_tomorrow_am'), val:forecastResult.matin??forecastResult.demain_matin, icon:'sunny'},
-                {label:t(lang,'alloc_tomorrow_pm'), val:forecastResult.soir??forecastResult.demain_soir,   icon:'moon'},
-              ].map((item,i)=>(
-                <View key={i} style={[s.forecastRow,{backgroundColor:theme.bgHover,borderColor:theme.border}]}>
-                  <Ionicons name={item.icon} size={22} color={theme.accentOrange}/>
-                  <View style={{flex:1}}>
-                    <Text style={{color:theme.textSecondary,fontSize:12}}>{item.label}</Text>
-                    <Text style={{color:theme.accentOrange,fontWeight:'900',fontSize:20}}>{fmtKwh(Number(item.val)||0)}</Text>
+               <View style={[s.forecastRow,{backgroundColor:theme.bgHover,borderColor:theme.accentOrange}]}>
+                  <Ionicons name="sunny" size={32} color={theme.accentOrange}/>
+                  <View style={{flex:1, marginLeft: 10}}>
+                    <Text style={{color:theme.textSecondary,fontSize:12}}>Estimation Demain ({forecastResult.methode})</Text>
+                    <Text style={{color:theme.accentOrange,fontWeight:'900',fontSize:26}}>{fmtKwh(forecastResult.estimation_kwh)}</Text>
+                    <Text style={{color:theme.textMuted, fontSize:10}}>Indice de confiance : {forecastResult.confiance_pct}%</Text>
                   </View>
-                </View>
-              ))}
+               </View>
             </View>
           )}
         </SectionCard>
+
+        {/* ── Tests de charge (Admin uniquement) ── */}
+        {isAdmin && (
+          <>
+            <PrimaryButton title="Lancer Test de Charge (500 req)" onPress={runLoadTest} variant="danger" style={{marginTop: 20}} />
+            {testChargeResult && (
+               <SectionCard title="Resultat Test de Charge">
+                  <Text style={{color:theme.textPrimary}}>Latence Moyenne: {testChargeResult.latence_moyenne_ms}ms</Text>
+                  <Text style={{color:theme.textPrimary}}>Succès: {testChargeResult.taux_succes}%</Text>
+               </SectionCard>
+            )}
+          </>
+        )}
       </ScrollView>
     </View>
   );
@@ -161,6 +191,10 @@ const s = StyleSheet.create({
   miniKpi:{flex:1,padding:10,borderRadius:10,borderWidth:1,alignItems:'center'},
   miniVal:{fontSize:18,fontWeight:'900'},
   miniLbl:{fontSize:10,marginTop:3,textAlign:'center'},
-  compareRow:{padding:12,borderRadius:10,borderWidth:1,marginBottom:8},
-  forecastRow:{flexDirection:'row',alignItems:'center',gap:14,padding:14,borderRadius:10,borderWidth:1,marginBottom:8},
+  compareRow:{padding:12,borderRadius:12,borderWidth:1.5,marginBottom:10},
+  compareStats:{flexDirection:'row',justifyContent:'space-between',marginTop:8},
+  miniStatTxt:{fontSize:10,fontWeight:'600'},
+  forecastRow:{flexDirection:'row',alignItems:'center',padding:16,borderRadius:15,borderWidth:1},
+  bigBtn:{marginTop:12, height: 55}, // Optimisé pour gros doigts
+  dijkstraBox:{marginTop:10, padding:8, borderTopWidth:1, borderTopColor:'#eee'},
 });

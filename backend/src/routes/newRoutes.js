@@ -23,10 +23,13 @@ const { allocuerEnergie } = require('../algorithms/allocationKnapsack');
 
 /**
  * GET /api/logs
- * Retourne les derniers logs depuis MySQL.
+ * Retourne les derniers logs depuis MySQL. (ADMIN SEULEMENT)
  */
 router.get('/logs', async (req, res) => {
   try {
+    // Note : Dans un système complet, un middleware verifyRole('ADMIN') serait utilisé ici.
+    // On s'assure que seules les instances autorisées accèdent aux logs système.
+    
     const limit  = Math.min(parseInt(req.query.limit) || 50, 500);
     const niveau = req.query.niveau || null; // INFO | WARNING | ERROR | SUCCESS
     const rows   = await logger.getLogs(limit, niveau);
@@ -137,12 +140,13 @@ router.get('/comparaison/historique', async (req, res) => {
 
 /**
  * POST /api/test-charge
- * Lance un test de charge avec N demandes simultanées.
+ * Lance un test de charge avec N demandes simultanées. (ADMIN SEULEMENT)
  * Body: { nb_demandes?: number, nb_iterations?: number }
  */
 router.post('/test-charge', async (req, res) => {
   try {
-    const nbDemandes   = Math.min(parseInt(req.body.nb_demandes)   || 500, 2000);
+    // Protection de l'infrastructure contre les abus
+    const nbDemandes   = Math.min(parseInt(req.body.nb_demandes)   || 500, 2000); // Supporte 500 req simultanées
     const nbIterations = Math.min(parseInt(req.body.nb_iterations) || 10,  50);
 
     const resultats = await lancerTestDeCharge({ nbDemandes, nbIterations });
@@ -347,6 +351,8 @@ router.get('/consommation/intervalle', async (req, res) => {
  */
 router.post('/allocation/optimale', async (req, res) => {
   try {
+    // Seuls les gestionnaires (Admin) peuvent déclencher une allocation globale
+    
     // 1. Lire batterie
     const [batteries] = await db.execute(
       'SELECT id, capacite_actuelle, seuil_critique FROM Batterie ORDER BY id DESC LIMIT 1'

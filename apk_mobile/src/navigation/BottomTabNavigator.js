@@ -3,13 +3,16 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { THEME } from '../constants/theme';
 import { get } from '../i18n/strings';
+import { useApp } from '../context/AppContext';
 
 // Importez vos écrans ici
 import DashboardScreen from '../screens/DashboardScreen';
-// import BatteriesScreen from '../screens/BatteriesScreen';
-// import DemandesScreen from '../screens/DemandesScreen';
-// import AllocationScreen from '../screens/AllocationScreen';
-// import RapportsScreen from '../screens/RapportsScreen';
+import BatteriesScreen from '../screens/BatteriesScreen';
+import DemandesScreen from '../screens/DemandesScreen';
+import AllocationScreen from '../screens/AllocationScreen';
+import RapportsScreen from '../screens/RapportsScreen';
+import UtilisateursScreen from '../screens/UtilisateursScreen';
+import FoyersScreen from '../screens/FoyersScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -19,13 +22,30 @@ const Tab = createBottomTabNavigator();
  *              Applique la charte graphique pour les onglets, les icônes et les labels bilingues.
  */
 const BottomTabNavigator = () => {
-  const tabsConfig = [
-    { name: 'Dashboard', component: DashboardScreen, icon: 'home', labelKey: 'home' },
-    { name: 'Batteries', component: DashboardScreen, icon: 'battery-charging', labelKey: 'battery' }, // Placeholder
-    { name: 'Demandes', component: DashboardScreen, icon: 'list-box', labelKey: 'demands' }, // Placeholder
-    { name: 'Allocation', component: DashboardScreen, icon: 'lightning-bolt', labelKey: 'allocation' }, // Placeholder
-    { name: 'Rapports', component: DashboardScreen, icon: 'chart-bar', labelKey: 'reports' }, // Placeholder
-  ];
+  const { user } = useApp();
+  const role = user?.role || 'VILLAGEOIS';
+
+  // Définition des accès par rôle
+  const fullAccess = role === 'ADMIN' || role === 'RESPONSABLE';
+
+  const tabsConfig = [];
+
+  // Onglets communs
+  tabsConfig.push({ name: 'Dashboard', component: DashboardScreen, icon: 'home', labelKey: 'home' });
+  tabsConfig.push({ name: 'Demandes', component: DemandesScreen, icon: 'lightning-bolt', labelKey: 'demands' });
+  tabsConfig.push({ name: 'Allocation', component: AllocationScreen, icon: 'brain', labelKey: 'allocation' });
+
+  // Onglets réservés à la gestion
+  if (fullAccess) {
+    tabsConfig.push({ name: 'Batteries', component: BatteriesScreen, icon: 'battery-charging', labelKey: 'battery' });
+    tabsConfig.push({ name: 'Foyers', component: FoyersScreen, icon: 'home-group', labelKey: 'foyers' });
+    tabsConfig.push({ name: 'Rapports', component: RapportsScreen, icon: 'chart-bar', labelKey: 'reports' });
+  }
+
+  // Onglet réservé à l'Admin
+  if (role === 'ADMIN') {
+    tabsConfig.push({ name: 'Users', component: UtilisateursScreen, icon: 'account-group', labelKey: 'utilisateurs' });
+  }
 
   return (
     <Tab.Navigator

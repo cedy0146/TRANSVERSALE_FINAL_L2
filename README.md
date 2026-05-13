@@ -81,15 +81,21 @@ npm test
 - 📈 Comparaison visuelle des méthodes d'allocation (FIFO vs Knapsack).
 - 📜 Logs système détaillés pour le suivi des opérations.
 
-## 📊 Démonstration Scientifique (Optimisation)
-ElectriMada compare systématiquement l'allocation naïve (FIFO) et l'allocation intelligente (Knapsack).
+## 🚀 Spécifications Madagascar 2035 (ElectriMada)
 
-| Scénario | Méthode | Satisfaction Besoins | Gaspillage Batterie |
-|----------|---------|----------------------|----------------------|
-| Pic soir | Naïve (FIFO) | 45% | 15% |
-| Pic soir | Knapsack | 92% | 2% |
+Cette solution est conçue pour les micro-réseaux isolés avec les contraintes suivantes :
+- **Architecture Offline-First** : Synchronisation MySQL/AsyncStorage bidirectionnelle.
+- **Algorithmes Optimisés** :
+    - **Knapsack** : Maximisation de l'utilité sociale sous contrainte de batterie.
+    - **Dijkstra** : Minimisation des pertes par effet Joule dans le transport électrique.
+    - **Segment Tree** : Agrégation O(log N) des consommations horaires.
+    - **Moving Average** : Prévision de production solaire sans IA lourde.
+- **Interface Basse-Consommation** : UI optimisée pour smartphones Android recyclés (CPU/RAM limités).
 
-*Les tests montrent une amélioration de 47% de la couverture énergétique communautaire.*
+### Installation rapide
+1. `npm install` dans backend et frontend_jsp.
+2. Import `database.sql`.
+3. Lancement du serveur : `node src/server.js`.
 
 ## 👤 Auteurs
 
