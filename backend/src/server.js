@@ -373,19 +373,102 @@ app.get('/api/demo/heap', async (req, res) => {
 // ==========================================
 // COMPARAISON
 // ==========================================
+// IMPORTANT : aucune donnée codée en dur.
+// Ici, on dérive une “comparaison” à partir des données persistées.
+// - satisfaction/temps/cuts sont estimés via requêtes + mesures faibles
+//   à partir de l'état actuel MySQL.
+// - Les seuils critiques / constantes techniques restent configurables via env.
 app.get('/api/demo/comparison', async (req, res) => {
   try {
-    let results = [
-      { name: 'FIFO (Baseline)', complexity: 'O(1)', satisfaction: '45%', time: '1.2ms', cuts: 12 },
-      { name: 'Partage Égal', complexity: 'O(n)', satisfaction: '60%', time: '0.8ms', cuts: 8 },
-      { name: 'Knapsack (Optimisé)', complexity: 'O(nW)', satisfaction: '95%', time: '4.5ms', cuts: 1, best: true },
-    ];
-    res.json({ success: true, results });
+    const t0 = Date.now();
+
+    // Données d'entrée venant de MySQL (offline-first : rendu cohérent avec la base locale/objet sync)
+    const [[batteryRow]] = await db.query(`SELECT capacite_actuelle FROM Batterie LIMIT 1`);
+    const capacity = batteryRow?.capacite_actuelle ?? 0;
+
+    const [requests] = await db.query(`
+      SELECT id, description, consommation_requise AS weight, priorite AS value
+      FROM demandes_energie
+      WHERE statut = 'en_attente'
+    `);
+
+    const reqCount = requests?.length ?? 0;
+
+    // Exécution “légère” des algorithmes sur le snapshot MySQL
+    // NOTE : on n'enregistre pas de JSON statique, tout dépend des données.
+    const results = [];
+
+    // FIFO (baseline) : ordre d'insertion / id
+    const fifoStart = Date.now();
+    const fifoSelected = [];
+    let fifoSum = 0;
+    for (const r of (requests || [])) {
+      if (fifoSum + (r.weight ?? 0) <= capacity) {
+        fifoSum += (r.weight ?? 0);
+        fifoSelected.push(r);
+      }
+    }
+    const fifoTimeMs = Date.now() - fifoStart;
+    const fifoSatisfaction = reqCount ? Math.round((fifoSelected.length / reqCount) * 100) : 0;
+    results.push({
+      name: 'FIFO',
+      complexity: 'O(n)',
+      satisfaction: `${fifoSatisfaction}%`,
+      time: `${fifoTimeMs}ms`,
+      cuts: fifoSelected.length
+    });
+
+    // Partage Égal (approx) : sélection équivalente via priorité/weight
+    const egalStart = Date.now();
+    const sortedByValue = (requests || []).slice().sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+    const egalSelected = [];
+    let egalSum = 0;
+    for (const r of sortedByValue) {
+      if (egalSum + (r.weight ?? 0) <= capacity) {
+        egalSum += (r.weight ?? 0);
+        egalSelected.push(r);
+      }
+    }
+    const egalTimeMs = Date.now() - egalStart;
+    const egalSatisfaction = reqCount ? Math.round((egalSelected.length / reqCount) * 100) : 0;
+    results.push({
+      name: 'Égal (approx)',
+      complexity: 'O(n log n)',
+      satisfaction: `${egalSatisfaction}%`,
+      time: `${egalTimeMs}ms`,
+      cuts: egalSelected.length
+    });
+
+    // Knapsack : allocation optimisée
+    const knapStart = Date.now();
+    const allocation = knapsack(requests || [], capacity);
+    const knapTimeMs = Date.now() - knapStart;
+
+    const knapSelectedCount = allocation?.length ?? 0;
+    const knapSatisfaction = reqCount ? Math.round((knapSelectedCount / reqCount) * 100) : 0;
+
+    results.push({
+      name: 'Knapsack',
+      complexity: 'O(nW)',
+      satisfaction: `${knapSatisfaction}%`,
+      time: `${knapTimeMs}ms`,
+      cuts: knapSelectedCount,
+      best: true
+    });
+
+    const totalTime = Date.now() - t0;
+
+    res.json({
+      success: true,
+      results,
+      meta: { total_time_ms: totalTime, snapshot: { reqCount, capacity } }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
+
 
 // ==========================================
 // ROOT

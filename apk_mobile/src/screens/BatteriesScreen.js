@@ -48,7 +48,7 @@ export default function BatteriesScreen() {
   }
 
   async function handleDelete(b) {
-    Alert.alert(t(lang,'battery_delete_confirm'), b.nom||`#${b.id}`, [
+    Alert.alert(t(lang,'battery_delete_confirm'), b.nom||`${b.id}`, [
       { text: t(lang,'cancel'), style:'cancel' },
       { text: t(lang,'delete'), style:'destructive', onPress: async () => {
           const r = await safeDelete(`/batteries/${b.id}`);
@@ -97,7 +97,7 @@ export default function BatteriesScreen() {
                 <SectionCard key={String(b.id)}>
                   <View style={s.cardHead}>
                     <View>
-                      <Text style={[s.name, { color:theme.textPrimary }]}>{b.nom||`Batterie #${b.id}`}</Text>
+                      <Text style={[s.name, { color:theme.textPrimary }]}>{b.nom||`Batterie ${b.id}`}</Text>
                       {(b.localisation||b.emplacement) && <Text style={[s.loc, { color:theme.textMuted }]}>📍 {b.localisation||b.emplacement}</Text>}
                     </View>
                     <View style={[s.badge, { backgroundColor: statusColor+'22', borderColor: statusColor }]}>
