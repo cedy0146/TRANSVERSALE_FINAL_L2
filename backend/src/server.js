@@ -14,9 +14,15 @@ let PORT = process.env.PORT || 3000;
 // MIDDLEWARES
 // ==========================================
 app.use(helmet());
-app.use(cors());
-app.use(morgan('dev'));
 
+// ✅ CORS élargi : autorise le site web, Expo Go, et les APK buildées
+app.use(cors({
+  origin: '*',               // En production, remplace par ton domaine exact
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -55,7 +61,6 @@ let allocationRoutes = require('./routes/AllocationRoutes');
 // AUTH
 // ==========================================
 app.post('/api/auth/register', authController.register);
-
 app.post('/api/auth/login', authController.login);
 
 // ==========================================
@@ -253,7 +258,6 @@ app.delete('/api/foyers/:id', async (req, res) => {
 app.get('/api/utilisateurs', async (req, res) => {
   try {
     const rows = await Utilisateur.findAll();
-    // Ne pas exposer les mots de passe
     const safe = rows.map(({ password, ...u }) => u);
     res.json(safe);
   } catch (err) {
@@ -278,18 +282,10 @@ app.delete('/api/utilisateurs/:id', async (req, res) => {
 // ==========================================
 app.get('/api/rapports', async (req, res) => {
   try {
-
     res.json([]);
-
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).json({
-      success: false,
-      message: err.message
-    });
-
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
@@ -298,52 +294,20 @@ app.get('/api/rapports', async (req, res) => {
 // ==========================================
 app.get('/api/allocation/optimize', async (req, res) => {
   try {
-
-    let [battery] = await db.query(`
-      SELECT capacite_actuelle
-      FROM Batterie
-      LIMIT 1
-    `);
-
+    let [battery] = await db.query(`SELECT capacite_actuelle FROM Batterie LIMIT 1`);
     let capacity = battery[0]?.capacite_actuelle || 0;
-
     let [requests] = await db.query(`
-      SELECT
-        id,
-        description,
-        consommation_requise AS weight,
-        priorite AS value
-      FROM demandes_energie
-      WHERE statut = 'en_attente'
+      SELECT id, description, consommation_requise AS weight, priorite AS value
+      FROM demandes_energie WHERE statut = 'en_attente'
     `);
-
     if (requests.length === 0) {
-
-      return res.json({
-        success: true,
-        message: 'Aucune demande',
-        allocation: []
-      });
-
+      return res.json({ success: true, message: 'Aucune demande', allocation: [] });
     }
-
     let allocation = knapsack(requests, capacity);
-
-    res.json({
-      success: true,
-      battery_capacity: capacity,
-      allocation
-    });
-
+    res.json({ success: true, battery_capacity: capacity, allocation });
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).json({
-      success: false,
-      message: err.message
-    });
-
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
@@ -352,45 +316,15 @@ app.get('/api/allocation/optimize', async (req, res) => {
 // ==========================================
 app.get('/api/demo/segment-tree', async (req, res) => {
   try {
-
-    let [rows] = await db.query(`
-      SELECT valeur
-      FROM consommation_historique
-      ORDER BY date_heure DESC
-      LIMIT 24
-    `);
-
+    let [rows] = await db.query(`SELECT valeur FROM consommation_historique ORDER BY date_heure DESC LIMIT 24`);
     let data = rows.map(r => r.valeur).reverse();
-
-    if (data.length === 0) {
-
-      return res.json({
-        success: true,
-        intervalSum: 0
-      });
-
-    }
-
+    if (data.length === 0) return res.json({ success: true, intervalSum: 0 });
     let st = new SegmentTree(data);
-
     let sum = st.query(0, data.length);
-
-    res.json({
-      success: true,
-      intervalSum: sum,
-      data_points: data.length,
-      complexity: 'O(log n)'
-    });
-
+    res.json({ success: true, intervalSum: sum, data_points: data.length, complexity: 'O(log n)' });
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).json({
-      success: false,
-      message: err.message
-    });
-
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
@@ -399,59 +333,23 @@ app.get('/api/demo/segment-tree', async (req, res) => {
 // ==========================================
 app.get('/api/demo/dijkstra', async (req, res) => {
   try {
-
-    let [nodes] = await db.query(`
-      SELECT nom
-      FROM noeuds_reseau
-    `);
-
+    let [nodes] = await db.query(`SELECT nom FROM noeuds_reseau`);
     let [links] = await db.query(`
-      SELECT
-        n1.nom AS source,
-        n2.nom AS target,
-        c.distance
+      SELECT n1.nom AS source, n2.nom AS target, c.distance
       FROM connexions_reseau c
-      JOIN noeuds_reseau n1
-        ON c.source_id = n1.id
-      JOIN noeuds_reseau n2
-        ON c.destination_id = n2.id
+      JOIN noeuds_reseau n1 ON c.source_id = n1.id
+      JOIN noeuds_reseau n2 ON c.destination_id = n2.id
     `);
-
     let graph = {};
-
-    nodes.forEach(n => {
-      graph[n.nom] = {};
-    });
-
-    links.forEach(l => {
-      graph[l.source][l.target] = l.distance;
-    });
-
-    let startNode =
-      req.query.start ||
-      (nodes.length > 0 ? nodes[0].nom : null);
-
-    let endNode =
-      req.query.end ||
-      (nodes.length > 0 ? nodes[nodes.length - 1].nom : null);
-
+    nodes.forEach(n => { graph[n.nom] = {}; });
+    links.forEach(l => { graph[l.source][l.target] = l.distance; });
+    let startNode = req.query.start || (nodes.length > 0 ? nodes[0].nom : null);
+    let endNode = req.query.end || (nodes.length > 0 ? nodes[nodes.length - 1].nom : null);
     let result = dijkstra(graph, startNode, endNode);
-
-    res.json({
-      success: true,
-      result,
-      graph_visual: links
-    });
-
+    res.json({ success: true, result, graph_visual: links });
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).json({
-      success: false,
-      message: err.message
-    });
-
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
@@ -460,41 +358,15 @@ app.get('/api/demo/dijkstra', async (req, res) => {
 // ==========================================
 app.get('/api/demo/heap', async (req, res) => {
   try {
-
-    let [requests] = await db.query(`
-      SELECT
-        description,
-        priorite
-      FROM demandes_energie
-      WHERE statut = 'en_attente'
-    `);
-
+    let [requests] = await db.query(`SELECT description, priorite FROM demandes_energie WHERE statut = 'en_attente'`);
     let heap = new MinHeap();
-
-    requests.forEach(r => {
-      heap.insert(r.description, r.priorite);
-    });
-
+    requests.forEach(r => { heap.insert(r.description, r.priorite); });
     let priorities = [];
-
-    while (!heap.isEmpty()) {
-      priorities.push(heap.extractMin());
-    }
-
-    res.json({
-      success: true,
-      priorities
-    });
-
+    while (!heap.isEmpty()) { priorities.push(heap.extractMin()); }
+    res.json({ success: true, priorities });
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).json({
-      success: false,
-      message: err.message
-    });
-
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
@@ -503,46 +375,15 @@ app.get('/api/demo/heap', async (req, res) => {
 // ==========================================
 app.get('/api/demo/comparison', async (req, res) => {
   try {
-
     let results = [
-      {
-        name: 'FIFO (Baseline)',
-        complexity: 'O(1)',
-        satisfaction: '45%',
-        time: '1.2ms',
-        cuts: 12
-      },
-      {
-        name: 'Partage Égal',
-        complexity: 'O(n)',
-        satisfaction: '60%',
-        time: '0.8ms',
-        cuts: 8
-      },
-      {
-        name: 'Knapsack (Optimisé)',
-        complexity: 'O(nW)',
-        satisfaction: '95%',
-        time: '4.5ms',
-        cuts: 1,
-        best: true
-      }
+      { name: 'FIFO (Baseline)', complexity: 'O(1)', satisfaction: '45%', time: '1.2ms', cuts: 12 },
+      { name: 'Partage Égal', complexity: 'O(n)', satisfaction: '60%', time: '0.8ms', cuts: 8 },
+      { name: 'Knapsack (Optimisé)', complexity: 'O(nW)', satisfaction: '95%', time: '4.5ms', cuts: 1, best: true },
     ];
-
-    res.json({
-      success: true,
-      results
-    });
-
+    res.json({ success: true, results });
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).json({
-      success: false,
-      message: err.message
-    });
-
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
@@ -550,39 +391,30 @@ app.get('/api/demo/comparison', async (req, res) => {
 // ROOT
 // ==========================================
 app.get('/', (req, res) => {
-  res.json({
-    message: 'Bienvenue sur API ElectriMada',
-    status: 'OK'
-  });
+  res.json({ message: 'Bienvenue sur API ElectriMada', status: 'OK' });
 });
 
 // ==========================================
 // HEALTH
 // ==========================================
 app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    uptime: process.uptime(),
-    message: 'Server is healthy'
-  });
+  res.status(200).json({ uptime: process.uptime(), message: 'Server is healthy' });
 });
 
 // ==========================================
 // ERROR HANDLER
 // ==========================================
 app.use((err, req, res, next) => {
-
   console.error(err.stack);
-
-  res.status(500).json({
-    success: false,
-    message: 'Une erreur interne est survenue'
-  });
-
+  res.status(500).json({ success: false, message: 'Une erreur interne est survenue' });
 });
 
 // ==========================================
-// START SERVER
+// ✅ START SERVER — écoute sur 0.0.0.0 (toutes les interfaces)
+//    Indispensable pour Expo Go sur vrai téléphone et déploiement
 // ==========================================
-app.listen(PORT, () => {
-  console.log(`Serveur démarré sur http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Serveur démarré sur http://0.0.0.0:${PORT}`);
+  console.log(`   → Local :    http://localhost:${PORT}`);
+  console.log(`   → Réseau :   http://192.168.1.190:${PORT}  (IP à vérifier avec ifconfig)`);
 });
