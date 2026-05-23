@@ -33,10 +33,10 @@ const BottomTabNavigator = () => {
   // Onglets communs
   tabsConfig.push({ name: 'Dashboard', component: DashboardScreen, icon: 'home', labelKey: 'home' });
   tabsConfig.push({ name: 'Demandes', component: DemandesScreen, icon: 'lightning-bolt', labelKey: 'demands' });
-  tabsConfig.push({ name: 'Allocation', component: AllocationScreen, icon: 'brain', labelKey: 'allocation' });
 
   // Onglets réservés à la gestion
   if (fullAccess) {
+    tabsConfig.push({ name: 'Allocation', component: AllocationScreen, icon: 'brain', labelKey: 'allocation' });
     tabsConfig.push({ name: 'Batteries', component: BatteriesScreen, icon: 'battery-charging', labelKey: 'battery' });
     tabsConfig.push({ name: 'Foyers', component: FoyersScreen, icon: 'home-group', labelKey: 'foyers' });
     tabsConfig.push({ name: 'Rapports', component: RapportsScreen, icon: 'chart-bar', labelKey: 'reports' });
@@ -89,16 +89,3 @@ const BottomTabNavigator = () => {
 
 export default BottomTabNavigator;
 
-/*
-Liste des violations ergonomiques corrigées :
-
-Avant :
-- Labels d'onglets non bilingues ou peu clairs.
-- Icônes génériques ou absentes.
-- Style de la barre d'onglets non cohérent avec le reste de l'application.
-
-Après :
-- **Signifiance (Nielsen #2)** : Labels bilingues clairs et icônes explicites pour chaque onglet.
-- **Homogénéité (Nielsen #4)** : Style de la barre d'onglets (fond, bordure, couleurs active/inactive) défini par le `THEME`.
-- **Flexibilité/Accessibilité** : Hauteur de la barre d'onglets ajustée pour assurer un touch target suffisant.
-*/

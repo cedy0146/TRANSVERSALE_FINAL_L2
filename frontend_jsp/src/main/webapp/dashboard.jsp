@@ -12,7 +12,9 @@
       </div>
       <div class="page-actions">
         <button class="btn btn-outline btn-sm" onclick="loadDashboard()">🔄 Actualiser</button>
-        <button class="btn btn-primary btn-sm" onclick="window.location.href='allocation.jsp'">⚡ Lancer Allocation</button>
+        <% if ("RESPONSABLE".equals(session.getAttribute("userRole")) || "ADMIN".equals(session.getAttribute("userRole"))) { %>
+          <button class="btn btn-primary btn-sm" onclick="window.location.href='allocation.jsp'">⚡ Lancer Allocation</button>
+        <% } %>
       </div>
     </div>
 

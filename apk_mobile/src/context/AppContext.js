@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─── Palettes ────────────────────────────────────────────────────────────────
 const DARK = {
@@ -97,9 +98,38 @@ const AppContext = createContext(null);
 export function AppProvider({ children }) {
   const [isDark, setIsDark] = useState(true);
   const [lang, setLang] = useState('fr');
-  const [user, setUser] = useState(null); // Stockage de l'utilisateur et de son rôle
+  const [user, setUser] = useState(null); 
+  const [isLoading, setIsLoading] = useState(true);
 
   const theme = isDark ? DARK : LIGHT;
+
+  useEffect(() => {
+    // Charger la session au démarrage de l'app
+    const loadSession = async () => {
+      try {
+        const savedUser = await AsyncStorage.getItem('user_session');
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+        }
+      } catch (e) {
+        console.error("Erreur de chargement de la session", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadSession();
+  }, []);
+
+  const login = async (userData) => {
+    setUser(userData);
+    await AsyncStorage.setItem('user_session', JSON.stringify(userData));
+  };
+
+  const logout = async () => {
+    setUser(null);
+    await AsyncStorage.removeItem('user_session');
+    await AsyncStorage.removeItem('userToken'); // Nettoyage du token API
+  };
 
   return (
     <AppContext.Provider
@@ -107,7 +137,9 @@ export function AppProvider({ children }) {
         theme,
         isDark,
         user,
-        setUser,
+        login,
+        logout,
+        isLoading,
 
         toggleTheme: () => setIsDark(v => !v),
 

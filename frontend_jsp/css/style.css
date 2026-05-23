@@ -43,27 +43,27 @@
 
 /* ---- Mode Clair ---- */
 [data-theme="light"] {
-  --bg-primary: #f0f4ff;
-  --bg-secondary: #e8edf8;
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
   --bg-card: #ffffff;
-  --bg-hover: #f5f8ff;
-  --bg-input: #f8faff;
-  --border: #d1d9ec;
-  --border-active: #2563eb;
-  --text-primary: #1a2035;
-  --text-secondary: #4a5568;
-  --text-muted: #9aa0b4;
+  --bg-hover: #f1f5f9;
+  --bg-input: #ffffff;
+  --border: #e2e8f0;
+  --border-active: #3b82f6;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
   --accent-blue: #2563eb;
-  --accent-green: #059669;
+  --accent-green: #10b981;
   --accent-yellow: #d97706;
   --accent-red: #dc2626;
   --accent-purple: #7c3aed;
   --accent-orange: #ea580c;
-  --glow-blue: rgba(37, 99, 235, 0.1);
-  --glow-green: rgba(5, 150, 105, 0.1);
+  --glow-blue: rgba(37, 99, 235, 0.08);
+  --glow-green: rgba(16, 185, 129, 0.08);
   --sidebar-bg: #ffffff;
-  --navbar-bg: rgba(240, 244, 255, 0.92);
-  --chart-grid: #e5eaf8;
+  --navbar-bg: rgba(255, 255, 255, 0.85);
+  --chart-grid: #f1f5f9;
 }
 
 /* ---- Reset & Base ---- */

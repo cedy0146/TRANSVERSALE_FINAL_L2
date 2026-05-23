@@ -38,7 +38,7 @@
                 let data = await response.json();
                 if (data.success) {
                     tbody.innerHTML = data.results.map(r => `
-                        <tr style="${r.best ? 'background: #e1f5fe; font-weight: bold;' : ''}">
+                        <tr style="${r.best ? 'background: var(--glow-green); font-weight: bold;' : ''}">
                             <td>${r.name}</td><td>${r.complexity}</td><td>${r.satisfaction}</td><td>${r.time}</td><td>${r.cuts}</td>
                         </tr>
                     `).join('');

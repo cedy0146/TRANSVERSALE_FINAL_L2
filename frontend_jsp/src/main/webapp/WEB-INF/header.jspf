@@ -1,5 +1,10 @@
 <%@ page isELIgnored="true" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%-- Récupération du rôle (pour masquer les menus selon l’utilisateur) --%>
+<%
+  String role = (String) session.getAttribute("userRole");
+  if (role == null) role = "VILLAGEOIS";
+%>
 <!DOCTYPE html>
 <html lang="fr" data-theme="dark">
 <head>
@@ -49,36 +54,42 @@
       <a href="/frontend_jsp/dashboard.jsp" class="nav-item ${param.activePage == 'dashboard' ? 'active' : ''}">
         <span class="nav-icon">📊</span> Tableau de bord
       </a>
-      <a href="/frontend_jsp/foyers.jsp" class="nav-item ${param.activePage == 'foyers' ? 'active' : ''}">
-        <span class="nav-icon">🏠</span> Foyers
-      </a>
-      <a href="/frontend_jsp/batteries.jsp" class="nav-item ${param.activePage == 'batteries' ? 'active' : ''}">
-        <span class="nav-icon">🔋</span> Batteries
-      </a>
+
       <a href="/frontend_jsp/demandes.jsp" class="nav-item ${param.activePage == 'demandes' ? 'active' : ''}">
         <span class="nav-icon">⚡</span> Demandes Énergie
         <span class="nav-badge" id="badge-demandes">0</span>
       </a>
+
+      <% if ("RESPONSABLE".equals(role) || "ADMIN".equals(role)) { %>
+        <a href="/frontend_jsp/foyers.jsp" class="nav-item ${param.activePage == 'foyers' ? 'active' : ''}">
+          <span class="nav-icon">🏠</span> Foyers
+        </a>
+        <a href="/frontend_jsp/batteries.jsp" class="nav-item ${param.activePage == 'batteries' ? 'active' : ''}">
+          <span class="nav-icon">🔋</span> Batteries
+        </a>
+      <% } %>
     </div>
 
     <!-- Système -->
     <div class="sidebar-section">
       <div class="sidebar-label">Système</div>
-      <a href="/frontend_jsp/allocation.jsp" class="nav-item ${param.activePage == 'allocation' ? 'active' : ''}">
-        <span class="nav-icon">🎯</span> Allocation
-      </a>
-      <a href="/frontend_jsp/rapports.jsp" class="nav-item ${param.activePage == 'rapports' ? 'active' : ''}">
-<a href="/frontend_jsp/comparison.jsp" class="nav-item">
-<span class="nav-icon">📊</span> Comparison
-</a>
-<a href="/frontend_jsp/network.jsp" class="nav-item">
-<span class="nav-icon">🌐</span> Réseau
-</a>
-        <span class="nav-icon">📋</span> Rapports
-      </a>
-      <a href="/frontend_jsp/utilisateurs.jsp" class="nav-item ${param.activePage == 'utilisateurs' ? 'active' : ''}">
-        <span class="nav-icon">👥</span> Utilisateurs
-      </a>
+      <% if ("RESPONSABLE".equals(role) || "ADMIN".equals(role)) { %>
+        <a href="/frontend_jsp/allocation.jsp" class="nav-item ${param.activePage == 'allocation' ? 'active' : ''}">
+          <span class="nav-icon">🎯</span> Allocation
+        </a>
+        <a href="/frontend_jsp/rapports.jsp" class="nav-item ${param.activePage == 'rapports' ? 'active' : ''}">
+          <a href="/frontend_jsp/comparison.jsp" class="nav-item">
+            <span class="nav-icon">📊</span> Comparison
+          </a>
+          <a href="/frontend_jsp/network.jsp" class="nav-item">
+            <span class="nav-icon">🌐</span> Réseau
+          </a>
+          <span class="nav-icon">📋</span> Rapports
+        </a>
+        <a href="/frontend_jsp/utilisateurs.jsp" class="nav-item ${param.activePage == 'utilisateurs' ? 'active' : ''}">
+          <span class="nav-icon">👥</span> Utilisateurs
+        </a>
+      <% } %>
     </div>
 
     <!-- Actions -->
