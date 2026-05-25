@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ElectriDB — Gestion Énergie Solaire</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -16,12 +16,12 @@
       display: inline-block;
       padding: 2px 8px;
       border-radius: 99px;
-      font-size: .63rem;
+      font-size: .6rem;
       font-weight: 700;
       letter-spacing: .6px;
       text-transform: uppercase;
     }
-    .role-badge.responsable { background: var(--blue-100); color: var(--blue-700); border: 1px solid var(--blue-200); }
+    .role-badge.responsable { background: var(--amber-100); color: var(--amber-700); border: 1px solid var(--amber-200); }
     .role-badge.admin       { background: #faf5ff; color: #7c3aed; border: 1px solid #e9d5ff; }
     .role-badge.villageois  { background: var(--c-surface-2); color: var(--c-text-3); border: 1px solid var(--c-border); }
   </style>
@@ -54,7 +54,6 @@
 <!-- ===== SIDEBAR ===== -->
 <aside class="sidebar" id="sidebar">
 
-  <!-- Bloc utilisateur (rempli par JS) -->
   <div class="user-block">
     <div class="user-ava" id="sidebar-avatar">?</div>
     <div style="min-width:0;">
@@ -65,7 +64,6 @@
     </div>
   </div>
 
-  <!-- ── Section commune à tous les rôles ── -->
   <div class="nav-section">
     <span class="nav-label">Navigation</span>
     <div class="nav-items">
@@ -81,7 +79,6 @@
     </div>
   </div>
 
-  <!-- ── Sections réservées RESPONSABLE / ADMIN (masquées par défaut, affichées par JS) ── -->
   <div id="nav-responsable" style="display:none;">
     <div class="nav-section">
       <span class="nav-label">Gestion</span>
@@ -112,6 +109,10 @@
           <span class="nav-icon">🌐</span>
           Réseau
         </a>
+        <a href="/frontend_jsp/forecast.jsp" class="nav-link">
+          <span class="nav-icon">☀️</span>
+          Prévision Solaire
+        </a>
         <a href="/frontend_jsp/rapports.jsp" class="nav-link">
           <span class="nav-icon">📋</span>
           Rapports
@@ -133,12 +134,12 @@
   <div class="nav-spacer"></div>
   <div class="nav-divider"></div>
 
-  <div style="padding:10px 18px 8px;font-size:.7rem;color:var(--c-text-3);">
+  <div style="padding:8px 18px 6px;font-size:.69rem;color:var(--c-text-3);">
     Connecté en tant que
-    <span style="font-weight:700;color:var(--c-accent);" id="sidebar-role-text">...</span>
+    <span style="font-weight:700;color:var(--amber-600);" id="sidebar-role-text">...</span>
   </div>
 
-  <div style="padding:0 10px 10px;">
+  <div style="padding:0 8px 10px;">
     <button class="nav-link logout" id="btn-logout" style="width:100%;">
       <span class="nav-icon">🚪</span>
       Déconnexion
@@ -148,60 +149,44 @@
 </aside>
 
 <script>
-// ── Lecture du user depuis sessionStorage (source de vérité : Node.js/JS) ──
 (function() {
   var user = null;
   try { user = JSON.parse(sessionStorage.getItem('user')); } catch(e) {}
-
-  // Si pas de session → redirection login
   if (!user || !user.username) {
     window.location.href = '/frontend_jsp/login.jsp';
     return;
   }
-
   var role     = (user.role || 'VILLAGEOIS').toUpperCase();
   var username = user.username || 'Utilisateur';
   var letter   = username.charAt(0).toUpperCase();
   var isResp   = role === 'RESPONSABLE' || role === 'ADMIN';
 
-  // Avatar & nom
   document.getElementById('nav-avatar-letter').textContent = letter;
   document.getElementById('sidebar-avatar').textContent    = letter;
   document.getElementById('sidebar-username').textContent  = username;
   document.getElementById('sidebar-role-text').textContent = role;
 
-  // Badge rôle
   var badge = document.getElementById('sidebar-role-badge');
-  badge.textContent  = role;
-  badge.className    = 'role-badge ' + (role === 'ADMIN' ? 'admin' : isResp ? 'responsable' : 'villageois');
+  badge.textContent = role;
+  badge.className   = 'role-badge ' + (role === 'ADMIN' ? 'admin' : isResp ? 'responsable' : 'villageois');
 
-  // Afficher la section Responsable si besoin
-  if (isResp) {
-    document.getElementById('nav-responsable').style.display = '';
-  }
+  if (isResp) document.getElementById('nav-responsable').style.display = '';
 
-  // Active link
   document.querySelectorAll('.nav-link[href]').forEach(function(link) {
     var page = link.getAttribute('href').split('/').pop();
-    if (window.location.pathname.endsWith(page)) {
-      link.classList.add('active');
-    }
+    if (window.location.pathname.endsWith(page)) link.classList.add('active');
   });
 
-  // Mobile sidebar toggle
   window.toggleSidebar = function() {
     document.getElementById('sidebar').classList.toggle('mobile-open');
   };
 
-  // Logout
   document.addEventListener('DOMContentLoaded', function() {
     var btn = document.getElementById('btn-logout');
-    if (btn) {
-      btn.addEventListener('click', function() {
-        sessionStorage.removeItem('user');
-        window.location.href = '/frontend_jsp/login.jsp';
-      });
-    }
+    if (btn) btn.addEventListener('click', function() {
+      sessionStorage.removeItem('user');
+      window.location.href = '/frontend_jsp/login.jsp';
+    });
   });
 })();
 </script>

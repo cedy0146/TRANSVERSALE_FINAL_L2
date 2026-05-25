@@ -1,4 +1,3 @@
-%>
 <%@ page isELIgnored="true" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="WEB-INF/header.jspf" %>
@@ -12,14 +11,16 @@
       </div>
     </div>
 
-    <!-- Explications algo -->
+    <!-- Explications algo — version améliorée -->
     <div class="alert alert-info" style="margin-bottom:20px;">
       <span class="alert-icon">ℹ️</span>
       <div class="alert-body">
-        <div class="alert-title">Algorithme d'allocation actif</div>
-        <div class="alert-message">
-          L'algorithme Knapsack priorise les foyers selon leur criticité, jours sans électricité et consommation historique.
-          Lancez une allocation pour traiter les demandes en attente selon l'énergie disponible dans les batteries.
+        <div class="alert-title" style="font-size:0.95rem;font-weight:700;margin-bottom:6px;">
+          Algorithme Knapsack actif
+        </div>
+        <div class="alert-message" style="display:flex;flex-direction:column;gap:4px;">
+          <span>Priorise les foyers selon <strong>leur criticité</strong>, <strong>leurs jours sans électricité</strong> et <strong>leur consommation historique</strong>.</span>
+          <span style="color:var(--c-text-3);font-size:0.82rem;">Lancez une allocation pour distribuer l'énergie disponible dans les batteries aux demandes en attente.</span>
         </div>
       </div>
     </div>
@@ -123,7 +124,6 @@ function renderAllocationResult(result) {
         <span class="badge badge-green">${acceptees.length} demandes acceptées</span>
       </div>
 
-      <!-- Stats résultat -->
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;">
         <div style="background:var(--c-surface-2);padding:14px;border-radius:var(--radius-sm);text-align:center;">
           <div style="font-size:0.7rem;color:var(--c-text-3);text-transform:uppercase;letter-spacing:0.5px;">Demandes acceptées</div>
@@ -139,7 +139,6 @@ function renderAllocationResult(result) {
         </div>
       </div>
 
-      <!-- Flux énergie visuel -->
       <div style="background:var(--c-surface-2);padding:16px;border-radius:var(--radius-sm);margin-bottom:16px;">
         <div style="font-size:0.75rem;color:var(--c-text-3);text-transform:uppercase;margin-bottom:10px;">Flux d'énergie</div>
         <div class="energy-flow">
@@ -166,7 +165,7 @@ function renderAllocationResult(result) {
           <div style="font-size:0.8rem;font-weight:600;color:var(--c-text-2);margin-bottom:8px;">DEMANDES ACCEPTÉES</div>
           ${acceptees.map(d => `
             <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--glow-green);border:1px solid rgba(34,211,160,0.2);border-radius:var(--radius-sm);margin-bottom:4px;">
-              <span style="font-size:0.8rem;font-family:var(--mono);">${typeof d === 'object' ? (d.id || d.foyer_id || JSON.stringify(d)).substring(0, 20) : String(d).substring(0, 20)}</span>
+              <span style="font-size:0.8rem;font-family:var(--mono);">${typeof d === 'object' ? (d.id || d.foyer_id || JSON.stringify(d)).substring(0,20) : String(d).substring(0,20)}</span>
               <span class="badge badge-green">✅ Allouée</span>
             </div>`).join('')}
         </div>` : ''}
@@ -176,7 +175,7 @@ function renderAllocationResult(result) {
           <div style="font-size:0.8rem;font-weight:600;color:var(--c-text-2);margin-bottom:8px;">DEMANDES REFUSÉES (énergie insuffisante)</div>
           ${refusees.map(d => `
             <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,86,86,0.08);border:1px solid rgba(255,86,86,0.2);border-radius:var(--radius-sm);margin-bottom:4px;">
-              <span style="font-size:0.8rem;font-family:var(--mono);">${typeof d === 'object' ? (d.id || d.foyer_id || JSON.stringify(d)).substring(0, 20) : String(d).substring(0, 20)}</span>
+              <span style="font-size:0.8rem;font-family:var(--mono);">${typeof d === 'object' ? (d.id || d.foyer_id || JSON.stringify(d)).substring(0,20) : String(d).substring(0,20)}</span>
               <span class="badge badge-red">❌ Refusée</span>
             </div>`).join('')}
         </div>` : ''}
@@ -204,7 +203,7 @@ async function comparerMethodes() {
 function renderComparaison(result) {
   const el = document.getElementById('comparaison-result');
   const methods = result.methods || result.methodes || [];
-  
+
   let content = `
     <div class="card fade-in">
       <div class="card-header">
@@ -246,9 +245,7 @@ function renderComparaison(result) {
       },
       options: {
         responsive: true,
-        plugins: {
-          legend: { display: false },
-        },
+        plugins: { legend: { display: false } },
         scales: {
           x: { ticks: { color: isDark ? '#8892a4' : '#4a5568' }, grid: { color: isDark ? '#1e2434' : '#e5eaf8' } },
           y: { ticks: { color: isDark ? '#8892a4' : '#4a5568' }, grid: { color: isDark ? '#1e2434' : '#e5eaf8' } }

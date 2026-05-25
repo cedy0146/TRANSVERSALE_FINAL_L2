@@ -1,4 +1,4 @@
-%>
+
 <%@ page isELIgnored="true" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="WEB-INF/header.jspf" %>
@@ -84,7 +84,7 @@ function renderStats(rapports) {
   }, 0);
 
   document.getElementById('rapports-stats').innerHTML = `
-    <div class="stat-card blue fade-in">
+    <div class="stat-card amber fade-in">
       <div class="stat-icon blue">📋</div>
       <div class="stat-value">${rapports.length}</div>
       <div class="stat-label">Total Rapports</div>
@@ -94,7 +94,7 @@ function renderStats(rapports) {
       <div class="stat-value">${fmt.kWh(totalConso)}</div>
       <div class="stat-label">Consommation cumulée</div>
     </div>
-    <div class="stat-card yellow fade-in">
+    <div class="stat-card orange fade-in">
       <div class="stat-icon yellow">📊</div>
       <div class="stat-value">${fmt.kWh(avgConso)}</div>
       <div class="stat-label">Consommation moyenne</div>

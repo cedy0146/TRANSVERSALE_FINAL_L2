@@ -186,7 +186,7 @@ function renderStats(demandes) {
   const totalKwh   = demandes.reduce((s, d) => s + (d.quantite_kwh || 0), 0);
 
   document.getElementById('demandes-stats').innerHTML = `
-    <div class="stat-card yellow fade-in">
+    <div class="stat-card orange fade-in">
       <div class="stat-icon yellow">⏳</div>
       <div class="stat-value">${en_attente}</div>
       <div class="stat-label">En attente</div>
@@ -201,7 +201,7 @@ function renderStats(demandes) {
       <div class="stat-value">${critiques}</div>
       <div class="stat-label">Critiques</div>
     </div>
-    <div class="stat-card blue fade-in">
+    <div class="stat-card amber fade-in">
       <div class="stat-icon blue">⚡</div>
       <div class="stat-value">${fmt.kWh(totalKwh)}</div>
       <div class="stat-label">Total demandé</div>

@@ -120,7 +120,7 @@ function renderStats(users) {
   const avecFoyer    = users.filter(u => u.foyer_id).length;
 
   document.getElementById('users-stats').innerHTML = `
-    <div class="stat-card blue fade-in">
+    <div class="stat-card amber fade-in">
       <div class="stat-icon blue">👥</div>
       <div class="stat-value">${users.length}</div>
       <div class="stat-label">Total utilisateurs</div>
@@ -135,7 +135,7 @@ function renderStats(users) {
       <div class="stat-value">${villageois}</div>
       <div class="stat-label">Villageois</div>
     </div>
-    <div class="stat-card yellow fade-in">
+    <div class="stat-card orange fade-in">
       <div class="stat-icon yellow">🔗</div>
       <div class="stat-value">${avecFoyer}</div>
       <div class="stat-label">Liés à un foyer</div>
@@ -166,7 +166,7 @@ function renderTable(users) {
             </div>
             <div>
               <div style="font-weight:600;">${escHtml(u.username)}
-                ${isMe ? '<span class="badge badge-blue" style="margin-left:6px;">Vous</span>' : ''}
+                ${isMe ? '<span class="badge badge-amber" style="margin-left:6px;">Vous</span>' : ''}
               </div>
               <div style="font-size:0.75rem;color:var(--c-text-3);font-family:var(--mono);">${u.id?.substring(0, 16) || '—'}...</div>
             </div>

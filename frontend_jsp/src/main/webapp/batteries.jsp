@@ -147,7 +147,7 @@ function renderOverview(batteries) {
             <div style="font-weight:700;font-size:.95rem;margin-bottom:4px;">Batterie #${b.id}</div>
             ${isCritical
               ? '<span class="badge badge-red">⚠ Critique</span>'
-              : `<span class="badge ${cls === 'high' ? 'badge-green' : cls === 'medium' ? 'badge-blue' : 'badge-yellow'}">Niveau ${pct}%</span>`
+              : `<span class="badge ${cls === 'high' ? 'badge-green' : cls === 'medium' ? 'badge-amber' : 'badge-yellow'}">Niveau ${pct}%</span>`
             }
           </div>
           <div style="font-family:var(--mono);font-size:1.8rem;font-weight:800;color:${accent};line-height:1;">

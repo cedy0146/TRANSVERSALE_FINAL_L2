@@ -155,7 +155,7 @@ let currentFilter = 'ALL';
 const priorityBadge = {
   URGENTE: '<span class="badge badge-red">🔴 Urgente</span>',
   HAUTE:   '<span class="badge badge-yellow">🟡 Haute</span>',
-  NORMALE: '<span class="badge badge-blue">🔵 Normale</span>',
+  NORMALE: '<span class="badge badge-amber">🔵 Normale</span>',
 };
 
 async function loadFoyers() {
