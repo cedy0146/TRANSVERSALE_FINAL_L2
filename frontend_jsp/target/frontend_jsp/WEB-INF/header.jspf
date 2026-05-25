@@ -1,102 +1,207 @@
 <%@ page isELIgnored="true" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%-- Récupération du rôle (pour masquer les menus selon l’utilisateur) --%>
-<%
-  String role = (String) session.getAttribute("userRole");
-  if (role == null) role = "VILLAGEOIS";
-%>
 <!DOCTYPE html>
-<html lang="fr" data-theme="dark">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EclectriDB — Gestion Énergie</title>
+  <title>ElectriDB — Gestion Énergie Solaire</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    .role-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: .63rem;
+      font-weight: 700;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+    }
+    .role-badge.responsable { background: var(--blue-100); color: var(--blue-700); border: 1px solid var(--blue-200); }
+    .role-badge.admin       { background: #faf5ff; color: #7c3aed; border: 1px solid #e9d5ff; }
+    .role-badge.villageois  { background: var(--c-surface-2); color: var(--c-text-3); border: 1px solid var(--c-border); }
+  </style>
 </head>
 <body>
+
 <div class="app-layout">
 
-  <!-- NAVBAR -->
-  <nav class="navbar">
-    <div class="navbar-brand">
-      <div class="logo-icon">⚡</div>
-      Electri<span>DB</span>
-    </div>
-    <div class="navbar-center">
-      <div class="status-dot"></div>
+<!-- ===== TOPBAR ===== -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <div class="logo-mark">⚡</div>
+    <span class="brand-name">Electri<span class="brand-db">DB</span></span>
+  </div>
+
+  <div class="navbar-center">
+    <div class="status-pill">
+      <span class="dot-live"></span>
       <span id="server-status">Connecté au serveur</span>
     </div>
-    <div class="navbar-actions">
-      <button class="btn-icon" id="mobile-menu-toggle" title="Menu" style="display:none">☰</button>
-      <button class="btn-icon" id="theme-toggle" title="Changer le thème">🌙</button>
-      <div class="user-avatar" title="Mon compte">?</div>
-    </div>
-  </nav>
+  </div>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <!-- User Info -->
-    <div style="padding:12px;margin-bottom:16px;background:var(--bg-secondary);border-radius:var(--radius);border:1px solid var(--border);">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div class="user-avatar" style="width:40px;height:40px;font-size:16px;">?</div>
-        <div>
-          <div style="font-weight:600;font-size:0.875rem;" id="current-username">Utilisateur</div>
-          <span class="badge badge-blue" id="current-role">RESPONSABLE</span>
-        </div>
+  <div class="navbar-actions">
+    <button class="nav-icon-btn" id="notif-btn" title="Notifications">🔔</button>
+    <button class="nav-icon-btn" id="menu-btn" title="Menu mobile" onclick="toggleSidebar()">☰</button>
+    <div class="nav-avatar" id="nav-avatar-letter">?</div>
+  </div>
+</nav>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar">
+
+  <!-- Bloc utilisateur (rempli par JS) -->
+  <div class="user-block">
+    <div class="user-ava" id="sidebar-avatar">?</div>
+    <div style="min-width:0;">
+      <div class="user-name" id="sidebar-username" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+        Chargement...
+      </div>
+      <span class="role-badge villageois" id="sidebar-role-badge">...</span>
+    </div>
+  </div>
+
+  <!-- ── Section commune à tous les rôles ── -->
+  <div class="nav-section">
+    <span class="nav-label">Navigation</span>
+    <div class="nav-items">
+      <a href="/frontend_jsp/dashboard.jsp" class="nav-link">
+        <span class="nav-icon">📊</span>
+        Tableau de bord
+      </a>
+      <a href="/frontend_jsp/demandes.jsp" class="nav-link">
+        <span class="nav-icon">⚡</span>
+        Demandes Énergie
+        <span class="n-badge" id="badge-demandes" style="display:none">0</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Sections réservées RESPONSABLE / ADMIN (masquées par défaut, affichées par JS) ── -->
+  <div id="nav-responsable" style="display:none;">
+    <div class="nav-section">
+      <span class="nav-label">Gestion</span>
+      <div class="nav-items">
+        <a href="/frontend_jsp/foyers.jsp" class="nav-link">
+          <span class="nav-icon">🏠</span>
+          Foyers
+        </a>
+        <a href="/frontend_jsp/batteries.jsp" class="nav-link">
+          <span class="nav-icon">🔋</span>
+          Batteries
+        </a>
+        <a href="/frontend_jsp/allocation.jsp" class="nav-link">
+          <span class="nav-icon">🎯</span>
+          Allocation
+        </a>
       </div>
     </div>
 
-    <!-- Navigation principale -->
-    <div class="sidebar-section">
-      <div class="sidebar-label">Navigation</div>
-      <a href="/frontend_jsp/dashboard.jsp" class="nav-item ${param.activePage == 'dashboard' ? 'active' : ''}">
-        <span class="nav-icon">📊</span> Tableau de bord
-      </a>
-
-      <a href="/frontend_jsp/demandes.jsp" class="nav-item ${param.activePage == 'demandes' ? 'active' : ''}">
-        <span class="nav-icon">⚡</span> Demandes Énergie
-        <span class="nav-badge" id="badge-demandes">0</span>
-      </a>
-
-      <% if ("RESPONSABLE".equals(role) || "ADMIN".equals(role)) { %>
-        <a href="/frontend_jsp/foyers.jsp" class="nav-item ${param.activePage == 'foyers' ? 'active' : ''}">
-          <span class="nav-icon">🏠</span> Foyers
+    <div class="nav-section">
+      <span class="nav-label">Analytique</span>
+      <div class="nav-items">
+        <a href="/frontend_jsp/comparison.jsp" class="nav-link">
+          <span class="nav-icon">📈</span>
+          Comparaison
         </a>
-        <a href="/frontend_jsp/batteries.jsp" class="nav-item ${param.activePage == 'batteries' ? 'active' : ''}">
-          <span class="nav-icon">🔋</span> Batteries
+        <a href="/frontend_jsp/network.jsp" class="nav-link">
+          <span class="nav-icon">🌐</span>
+          Réseau
         </a>
-      <% } %>
+        <a href="/frontend_jsp/rapports.jsp" class="nav-link">
+          <span class="nav-icon">📋</span>
+          Rapports
+        </a>
+      </div>
     </div>
 
-    <!-- Système -->
-    <div class="sidebar-section">
-      <div class="sidebar-label">Système</div>
-      <% if ("RESPONSABLE".equals(role) || "ADMIN".equals(role)) { %>
-        <a href="/frontend_jsp/allocation.jsp" class="nav-item ${param.activePage == 'allocation' ? 'active' : ''}">
-          <span class="nav-icon">🎯</span> Allocation
+    <div class="nav-section">
+      <span class="nav-label">Administration</span>
+      <div class="nav-items">
+        <a href="/frontend_jsp/utilisateurs.jsp" class="nav-link">
+          <span class="nav-icon">👥</span>
+          Utilisateurs
         </a>
-        <a href="/frontend_jsp/rapports.jsp" class="nav-item ${param.activePage == 'rapports' ? 'active' : ''}">
-          <a href="/frontend_jsp/comparison.jsp" class="nav-item">
-            <span class="nav-icon">📊</span> Comparison
-          </a>
-          <a href="/frontend_jsp/network.jsp" class="nav-item">
-            <span class="nav-icon">🌐</span> Réseau
-          </a>
-          <span class="nav-icon">📋</span> Rapports
-        </a>
-        <a href="/frontend_jsp/utilisateurs.jsp" class="nav-item ${param.activePage == 'utilisateurs' ? 'active' : ''}">
-          <span class="nav-icon">👥</span> Utilisateurs
-        </a>
-      <% } %>
+      </div>
     </div>
+  </div>
 
-    <!-- Actions -->
-    <div class="sidebar-section" style="margin-top:auto;">
-      <div class="sidebar-label">Compte</div>
-      <button class="nav-item" id="btn-logout" style="width:100%;text-align:left;">
-        <span class="nav-icon">🚪</span> Déconnexion
-      </button>
-    </div>
-  </aside>
+  <div class="nav-spacer"></div>
+  <div class="nav-divider"></div>
+
+  <div style="padding:10px 18px 8px;font-size:.7rem;color:var(--c-text-3);">
+    Connecté en tant que
+    <span style="font-weight:700;color:var(--c-accent);" id="sidebar-role-text">...</span>
+  </div>
+
+  <div style="padding:0 10px 10px;">
+    <button class="nav-link logout" id="btn-logout" style="width:100%;">
+      <span class="nav-icon">🚪</span>
+      Déconnexion
+    </button>
+  </div>
+
+</aside>
+
+<script>
+// ── Lecture du user depuis sessionStorage (source de vérité : Node.js/JS) ──
+(function() {
+  var user = null;
+  try { user = JSON.parse(sessionStorage.getItem('user')); } catch(e) {}
+
+  // Si pas de session → redirection login
+  if (!user || !user.username) {
+    window.location.href = '/frontend_jsp/login.jsp';
+    return;
+  }
+
+  var role     = (user.role || 'VILLAGEOIS').toUpperCase();
+  var username = user.username || 'Utilisateur';
+  var letter   = username.charAt(0).toUpperCase();
+  var isResp   = role === 'RESPONSABLE' || role === 'ADMIN';
+
+  // Avatar & nom
+  document.getElementById('nav-avatar-letter').textContent = letter;
+  document.getElementById('sidebar-avatar').textContent    = letter;
+  document.getElementById('sidebar-username').textContent  = username;
+  document.getElementById('sidebar-role-text').textContent = role;
+
+  // Badge rôle
+  var badge = document.getElementById('sidebar-role-badge');
+  badge.textContent  = role;
+  badge.className    = 'role-badge ' + (role === 'ADMIN' ? 'admin' : isResp ? 'responsable' : 'villageois');
+
+  // Afficher la section Responsable si besoin
+  if (isResp) {
+    document.getElementById('nav-responsable').style.display = '';
+  }
+
+  // Active link
+  document.querySelectorAll('.nav-link[href]').forEach(function(link) {
+    var page = link.getAttribute('href').split('/').pop();
+    if (window.location.pathname.endsWith(page)) {
+      link.classList.add('active');
+    }
+  });
+
+  // Mobile sidebar toggle
+  window.toggleSidebar = function() {
+    document.getElementById('sidebar').classList.toggle('mobile-open');
+  };
+
+  // Logout
+  document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('btn-logout');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        sessionStorage.removeItem('user');
+        window.location.href = '/frontend_jsp/login.jsp';
+      });
+    }
+  });
+})();
+</script>

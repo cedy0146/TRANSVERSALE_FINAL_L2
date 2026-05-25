@@ -1,3 +1,4 @@
+%>
 <%@ page isELIgnored="true" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="WEB-INF/header.jspf" %>
@@ -47,7 +48,7 @@
             </tr>
           </thead>
           <tbody id="comparison-tbody">
-            <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted);">
+            <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--c-text-3);">
               <span class="spin" style="display:inline-block">⟳</span> Chargement depuis la base de données...
             </td></tr>
           </tbody>
@@ -145,18 +146,18 @@ async function loadComparison() {
           <div style="font-weight:600;">${r.name}</div>
           ${r.best ? '<span class="badge badge-green" style="margin-top:2px;">⭐ Optimal</span>' : ''}
         </td>
-        <td><span class="badge badge-purple" style="font-family:var(--font-mono);">${r.complexity}</span></td>
+        <td><span class="badge badge-purple" style="font-family:var(--mono);">${r.complexity}</span></td>
         <td>
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="flex:1;height:6px;background:var(--bg-secondary);border-radius:3px;overflow:hidden;min-width:60px;">
-              <div style="height:100%;width:${r.satisfaction};background:${r.best ? 'var(--accent-green)' : 'var(--accent-blue)'};border-radius:3px;"></div>
+            <div style="flex:1;height:6px;background:var(--c-surface-2);border-radius:3px;overflow:hidden;min-width:60px;">
+              <div style="height:100%;width:${r.satisfaction};background:${r.best ? '#10b981' : 'var(--c-accent)'};border-radius:3px;"></div>
             </div>
-            <span style="font-family:var(--font-mono);font-size:0.875rem;font-weight:600;">${r.satisfaction}</span>
+            <span style="font-family:var(--mono);font-size:0.875rem;font-weight:600;">${r.satisfaction}</span>
           </div>
         </td>
-        <td><span style="font-family:var(--font-mono);">${r.time}</span></td>
+        <td><span style="font-family:var(--mono);">${r.time}</span></td>
         <td>
-          <span style="font-family:var(--font-mono);color:${r.cuts <= 2 ? 'var(--accent-green)' : r.cuts <= 8 ? 'var(--accent-yellow)' : 'var(--accent-red)'};">
+          <span style="font-family:var(--mono);color:${r.cuts <= 2 ? '#10b981' : r.cuts <= 8 ? '#f59e0b' : 'var(--c-danger)'};">
             ${r.cuts}
           </span>
         </td>
@@ -166,7 +167,7 @@ async function loadComparison() {
       </tr>`).join('');
 
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--accent-red);">
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--c-danger);">
       Erreur : ${err.message}</td></tr>`;
     Toast.error('Erreur chargement comparaison : ' + err.message);
   }
@@ -189,41 +190,41 @@ async function runLiveComparison() {
 
     // KPIs
     document.getElementById('live-kpis').innerHTML = `
-      <div style="background:var(--bg-secondary);padding:16px;border-radius:var(--radius-sm);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Utilité Knapsack</div>
-        <div style="font-family:var(--font-mono);font-size:1.6rem;font-weight:700;color:var(--accent-green);">${opt.utilite_totale ?? '—'}</div>
+      <div style="background:var(--c-surface-2);padding:16px;border-radius:var(--radius-sm);border:1px solid var(--c-border);text-align:center;">
+        <div style="font-size:0.7rem;color:var(--c-text-3);text-transform:uppercase;margin-bottom:4px;">Utilité Knapsack</div>
+        <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#10b981;">${opt.utilite_totale ?? '—'}</div>
       </div>
-      <div style="background:var(--bg-secondary);padding:16px;border-radius:var(--radius-sm);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Utilité FIFO</div>
-        <div style="font-family:var(--font-mono);font-size:1.6rem;font-weight:700;color:var(--text-secondary);">${naif.utilite_totale ?? '—'}</div>
+      <div style="background:var(--c-surface-2);padding:16px;border-radius:var(--radius-sm);border:1px solid var(--c-border);text-align:center;">
+        <div style="font-size:0.7rem;color:var(--c-text-3);text-transform:uppercase;margin-bottom:4px;">Utilité FIFO</div>
+        <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:var(--c-text-2);">${naif.utilite_totale ?? '—'}</div>
       </div>
       <div style="background:var(--glow-green);padding:16px;border-radius:var(--radius-sm);border:1px solid rgba(34,211,160,0.2);text-align:center;">
-        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Amélioration</div>
-        <div style="font-family:var(--font-mono);font-size:1.6rem;font-weight:700;color:var(--accent-green);">+${amelioration}%</div>
+        <div style="font-size:0.7rem;color:var(--c-text-3);text-transform:uppercase;margin-bottom:4px;">Amélioration</div>
+        <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#10b981;">+${amelioration}%</div>
       </div>
-      <div style="background:${gainCrit > 0 ? 'var(--glow-green)' : 'var(--bg-secondary)'};padding:16px;border-radius:var(--radius-sm);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Critiques sauvés en +</div>
-        <div style="font-family:var(--font-mono);font-size:1.6rem;font-weight:700;color:${gainCrit > 0 ? 'var(--accent-green)' : 'var(--text-secondary)'};">+${gainCrit}</div>
+      <div style="background:${gainCrit > 0 ? 'var(--glow-green)' : 'var(--c-surface-2)'};padding:16px;border-radius:var(--radius-sm);border:1px solid var(--c-border);text-align:center;">
+        <div style="font-size:0.7rem;color:var(--c-text-3);text-transform:uppercase;margin-bottom:4px;">Critiques sauvés en +</div>
+        <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:${gainCrit > 0 ? '#10b981' : 'var(--c-text-2)'};">+${gainCrit}</div>
       </div>
-      <div style="background:var(--bg-secondary);padding:16px;border-radius:var(--radius-sm);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Temps Knapsack</div>
-        <div style="font-family:var(--font-mono);font-size:1.6rem;font-weight:700;color:var(--accent-blue);">${opt.temps_ms ?? '—'} ms</div>
+      <div style="background:var(--c-surface-2);padding:16px;border-radius:var(--radius-sm);border:1px solid var(--c-border);text-align:center;">
+        <div style="font-size:0.7rem;color:var(--c-text-3);text-transform:uppercase;margin-bottom:4px;">Temps Knapsack</div>
+        <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:var(--c-accent);">${opt.temps_ms ?? '—'} ms</div>
       </div>
-      <div style="background:var(--bg-secondary);padding:16px;border-radius:var(--radius-sm);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Temps FIFO</div>
-        <div style="font-family:var(--font-mono);font-size:1.6rem;font-weight:700;color:var(--text-secondary);">${naif.temps_ms ?? '—'} ms</div>
+      <div style="background:var(--c-surface-2);padding:16px;border-radius:var(--radius-sm);border:1px solid var(--c-border);text-align:center;">
+        <div style="font-size:0.7rem;color:var(--c-text-3);text-transform:uppercase;margin-bottom:4px;">Temps FIFO</div>
+        <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:var(--c-text-2);">${naif.temps_ms ?? '—'} ms</div>
       </div>`;
 
     // Graphiques doughnut
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     renderDoughnut('chart-knapsack', chartKnapsack,
       (opt.acceptees || []).length, (opt.rejetees || []).length,
-      'var(--accent-green)', isDark,
+      '#10b981', isDark,
       v => { chartKnapsack = v; });
 
     renderDoughnut('chart-fifo', chartFifo,
       (naif.acceptees || []).length, (naif.rejetees || []).length,
-      'var(--accent-blue)', isDark,
+      'var(--c-accent)', isDark,
       v => { chartFifo = v; });
 
     // Stats sous graphiques
@@ -234,20 +235,20 @@ async function runLiveComparison() {
     document.getElementById('gain-content').innerHTML = `
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
         <div style="flex:1;min-width:200px;">
-          <div style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:8px;">
-            Le Knapsack produit <strong style="color:var(--accent-green);">${amelioration}% de gain d'utilité</strong>
-            et sauvegarde <strong style="color:var(--accent-green);">${data.critiques_sauves_optimise ?? 0} demandes critiques</strong>
+          <div style="font-size:0.875rem;color:var(--c-text-2);margin-bottom:8px;">
+            Le Knapsack produit <strong style="color:#10b981;">${amelioration}% de gain d'utilité</strong>
+            et sauvegarde <strong style="color:#10b981;">${data.critiques_sauves_optimise ?? 0} demandes critiques</strong>
             contre <strong>${data.critiques_sauves_naif ?? 0}</strong> pour le FIFO.
           </div>
-          <div style="font-size:0.8rem;color:var(--text-muted);">
-            Énergie utilisée — Knapsack : <strong style="font-family:var(--font-mono);">${fmt.kWh(opt.energie_utilisee_kwh ?? 0)}</strong>
-            · FIFO : <strong style="font-family:var(--font-mono);">${fmt.kWh(naif.energie_utilisee_kwh ?? 0)}</strong>
+          <div style="font-size:0.8rem;color:var(--c-text-3);">
+            Énergie utilisée — Knapsack : <strong style="font-family:var(--mono);">${fmt.kWh(opt.energie_utilisee_kwh ?? 0)}</strong>
+            · FIFO : <strong style="font-family:var(--mono);">${fmt.kWh(naif.energie_utilisee_kwh ?? 0)}</strong>
           </div>
         </div>
         <div style="background:var(--glow-green);border:1px solid rgba(34,211,160,0.3);padding:16px 24px;border-radius:var(--radius-sm);text-align:center;">
-          <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;">Score algorithme recommandé</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--accent-green);font-family:var(--font-mono);">Knapsack DP</div>
-          <div style="font-size:0.75rem;color:var(--text-muted);">O(n·W) — Programmation dynamique</div>
+          <div style="font-size:0.7rem;color:var(--c-text-3);text-transform:uppercase;">Score algorithme recommandé</div>
+          <div style="font-size:2rem;font-weight:800;color:#10b981;font-family:var(--mono);">Knapsack DP</div>
+          <div style="font-size:0.75rem;color:var(--c-text-3);">O(n·W) — Programmation dynamique</div>
         </div>
       </div>`;
 
@@ -290,17 +291,17 @@ function renderAlgoStats(id, algo) {
   const critiques  = (algo.acceptees || []).filter(d => d.niveau_criticite === 'CRITIQUE').length;
   document.getElementById(id).innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px;">
-      <div style="background:var(--bg-secondary);padding:10px;border-radius:var(--radius-sm);text-align:center;">
-        <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;">Acceptées</div>
-        <div style="font-family:var(--font-mono);font-weight:700;font-size:1.1rem;color:var(--accent-green);">${(algo.acceptees||[]).length}</div>
+      <div style="background:var(--c-surface-2);padding:10px;border-radius:var(--radius-sm);text-align:center;">
+        <div style="font-size:0.65rem;color:var(--c-text-3);text-transform:uppercase;">Acceptées</div>
+        <div style="font-family:var(--mono);font-weight:700;font-size:1.1rem;color:#10b981;">${(algo.acceptees||[]).length}</div>
       </div>
-      <div style="background:var(--bg-secondary);padding:10px;border-radius:var(--radius-sm);text-align:center;">
-        <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;">Critiques</div>
-        <div style="font-family:var(--font-mono);font-weight:700;font-size:1.1rem;color:var(--accent-red);">${critiques}</div>
+      <div style="background:var(--c-surface-2);padding:10px;border-radius:var(--radius-sm);text-align:center;">
+        <div style="font-size:0.65rem;color:var(--c-text-3);text-transform:uppercase;">Critiques</div>
+        <div style="font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--c-danger);">${critiques}</div>
       </div>
-      <div style="background:var(--bg-secondary);padding:10px;border-radius:var(--radius-sm);text-align:center;">
-        <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;">Énergie</div>
-        <div style="font-family:var(--font-mono);font-weight:700;font-size:0.85rem;color:var(--accent-blue);">${fmt.kWh(algo.energie_utilisee_kwh||0)}</div>
+      <div style="background:var(--c-surface-2);padding:10px;border-radius:var(--radius-sm);text-align:center;">
+        <div style="font-size:0.65rem;color:var(--c-text-3);text-transform:uppercase;">Énergie</div>
+        <div style="font-family:var(--mono);font-weight:700;font-size:0.85rem;color:var(--c-accent);">${fmt.kWh(algo.energie_utilisee_kwh||0)}</div>
       </div>
     </div>`;
 }
@@ -310,15 +311,15 @@ function renderDemandesTable(tbodyId, badgeId, demandes) {
   document.getElementById(badgeId).textContent = demandes.length;
   const tbody = document.getElementById(tbodyId);
   if (!demandes.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">Aucune</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--c-text-3);">Aucune</td></tr>';
     return;
   }
   tbody.innerHTML = demandes.map(d => `
     <tr>
-      <td style="font-family:var(--font-mono);font-size:0.75rem;">${(d.foyer_id || d.id || '').substring(0,10)}…</td>
-      <td style="font-family:var(--font-mono);">${fmt.kWh(d.quantite_kwh || 0)}</td>
+      <td style="font-family:var(--mono);font-size:0.75rem;">${(d.foyer_id || d.id || '').substring(0,10)}…</td>
+      <td style="font-family:var(--mono);">${fmt.kWh(d.quantite_kwh || 0)}</td>
       <td><span class="badge badge-${critColors[d.niveau_criticite] || 'gray'}">${d.niveau_criticite || '—'}</span></td>
-      <td style="font-family:var(--font-mono);color:var(--accent-green);">${d.utilite ?? '—'}</td>
+      <td style="font-family:var(--mono);color:#10b981;">${d.utilite ?? '—'}</td>
     </tr>`).join('');
 }
 

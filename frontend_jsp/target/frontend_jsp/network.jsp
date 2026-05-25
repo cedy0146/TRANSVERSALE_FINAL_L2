@@ -1,3 +1,4 @@
+%>
 <%@ page isELIgnored="true" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="WEB-INF/header.jspf" %>
@@ -63,8 +64,8 @@
           <span class="card-title">🌐 Topologie du Réseau</span>
           <span class="badge badge-blue" id="node-count">0 nœuds</span>
         </div>
-        <div id="network-graph" style="width:100%;height:320px;position:relative;background:var(--bg-secondary);border-radius:var(--radius-sm);overflow:hidden;">
-          <div id="graph-placeholder" style="display:flex;height:100%;align-items:center;justify-content:center;color:var(--text-muted);flex-direction:column;gap:8px;">
+        <div id="network-graph" style="width:100%;height:320px;position:relative;background:var(--c-surface-2);border-radius:var(--radius-sm);overflow:hidden;">
+          <div id="graph-placeholder" style="display:flex;height:100%;align-items:center;justify-content:center;color:var(--c-text-3);flex-direction:column;gap:8px;">
             <span style="font-size:2rem;">🗺️</span>
             <span style="font-size:0.875rem;">Chargement du graphe depuis la DB...</span>
           </div>
@@ -78,17 +79,17 @@
           <span class="card-title">📍 Résultat du Calcul</span>
           <span class="badge badge-gray" id="result-badge">En attente</span>
         </div>
-        <div id="result-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:240px;color:var(--text-muted);gap:8px;">
+        <div id="result-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:240px;color:var(--c-text-3);gap:8px;">
           <span style="font-size:2.5rem;">⚡</span>
           <span style="font-size:0.875rem;">Lancez le calcul pour voir le chemin optimal</span>
         </div>
         <div id="result-content" style="display:none;">
           <div style="text-align:center;padding:16px 0;">
-            <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Distance / Coût total</div>
-            <div class="stat-value" id="path-distance" style="font-size:2rem;color:var(--accent-blue);">—</div>
+            <div style="font-size:0.75rem;color:var(--c-text-3);text-transform:uppercase;letter-spacing:0.5px;">Distance / Coût total</div>
+            <div class="stat-value" id="path-distance" style="font-size:2rem;color:var(--c-accent);">—</div>
           </div>
-          <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:16px;">
-            <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;">Chemin optimal</div>
+          <div style="background:var(--c-surface-2);border-radius:var(--radius-sm);padding:16px;">
+            <div style="font-size:0.75rem;color:var(--c-text-3);text-transform:uppercase;margin-bottom:12px;">Chemin optimal</div>
             <div id="path-steps"></div>
           </div>
           <div id="path-metrics" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;"></div>
@@ -113,7 +114,7 @@
             </tr>
           </thead>
           <tbody id="edges-tbody">
-            <tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text-muted);">
+            <tr><td colspan="4" style="text-align:center;padding:32px;color:var(--c-text-3);">
               <span class="spin" style="display:inline-block">⟳</span> Chargement depuis la base de données...
             </td></tr>
           </tbody>
@@ -166,8 +167,8 @@ async function loadNetwork() {
     Toast.error('Erreur chargement réseau : ' + err.message);
     document.getElementById('graph-placeholder').innerHTML = `
       <span style="font-size:2rem;">⚠️</span>
-      <span style="font-size:0.875rem;color:var(--accent-red);">Impossible de charger les nœuds DB</span>
-      <span style="font-size:0.75rem;color:var(--text-muted);">Vérifiez que les tables <code>noeuds_reseau</code> et <code>connexions_reseau</code> existent</span>`;
+      <span style="font-size:0.875rem;color:var(--c-danger);">Impossible de charger les nœuds DB</span>
+      <span style="font-size:0.75rem;color:var(--c-text-3);">Vérifiez que les tables <code>noeuds_reseau</code> et <code>connexions_reseau</code> existent</span>`;
   }
 }
 
@@ -201,25 +202,25 @@ async function calculatePath() {
     if (path && path.length > 0) {
       stepsEl.innerHTML = path.map((node, i) => `
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <div style="width:26px;height:26px;border-radius:50%;background:${i === 0 ? 'var(--accent-blue)' : i === path.length-1 ? 'var(--accent-green)' : 'var(--accent-yellow)'};
+          <div style="width:26px;height:26px;border-radius:50%;background:${i === 0 ? 'var(--c-accent)' : i === path.length-1 ? '#10b981' : '#f59e0b'};
                display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#fff;flex-shrink:0;">${i+1}</div>
-          <div style="font-family:var(--font-mono);font-size:0.875rem;font-weight:600;">${node}</div>
+          <div style="font-family:var(--mono);font-size:0.875rem;font-weight:600;">${node}</div>
           ${i === 0 ? '<span class="badge badge-blue">Source</span>' : i === path.length-1 ? '<span class="badge badge-green">Dest.</span>' : ''}
-          ${i < path.length-1 ? '<div style="margin-left:auto;color:var(--text-muted);font-size:0.75rem;">↓</div>' : ''}
+          ${i < path.length-1 ? '<div style="margin-left:auto;color:var(--c-text-3);font-size:0.75rem;">↓</div>' : ''}
         </div>`).join('');
     } else {
-      stepsEl.innerHTML = '<div style="color:var(--accent-red);font-size:0.875rem;">Aucun chemin trouvé</div>';
+      stepsEl.innerHTML = '<div style="color:var(--c-danger);font-size:0.875rem;">Aucun chemin trouvé</div>';
     }
 
     // Métriques
     document.getElementById('path-metrics').innerHTML = `
-      <div style="background:var(--bg-secondary);padding:12px;border-radius:var(--radius-sm);text-align:center;">
-        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;">Nœuds traversés</div>
-        <div style="font-family:var(--font-mono);font-size:1.4rem;font-weight:700;color:var(--accent-blue);">${path ? path.length : 0}</div>
+      <div style="background:var(--c-surface-2);padding:12px;border-radius:var(--radius-sm);text-align:center;">
+        <div style="font-size:0.7rem;color:var(--c-text-3);text-transform:uppercase;">Nœuds traversés</div>
+        <div style="font-family:var(--mono);font-size:1.4rem;font-weight:700;color:var(--c-accent);">${path ? path.length : 0}</div>
       </div>
-      <div style="background:var(--bg-secondary);padding:12px;border-radius:var(--radius-sm);text-align:center;">
-        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;">Complexité</div>
-        <div style="font-family:var(--font-mono);font-size:0.9rem;font-weight:700;color:var(--accent-purple);">O((V+E) log V)</div>
+      <div style="background:var(--c-surface-2);padding:12px;border-radius:var(--radius-sm);text-align:center;">
+        <div style="font-size:0.7rem;color:var(--c-text-3);text-transform:uppercase;">Complexité</div>
+        <div style="font-family:var(--mono);font-size:0.9rem;font-weight:700;color:#64748b;">O((V+E) log V)</div>
       </div>`;
 
     // Re-dessiner le graphe avec chemin surligné
@@ -301,14 +302,14 @@ function renderGraphSVG(nodes, edges, pathNodes) {
 function renderEdgesTable(edges) {
   const tbody = document.getElementById('edges-tbody');
   if (!edges.length) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text-muted);">
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--c-text-3);">
       Aucune connexion en base de données</td></tr>`;
     return;
   }
   tbody.innerHTML = edges.map(e => `
     <tr>
-      <td><span style="font-family:var(--font-mono);font-weight:600;">${e.source}</span></td>
-      <td><span style="font-family:var(--font-mono);font-weight:600;">${e.target}</span></td>
+      <td><span style="font-family:var(--mono);font-weight:600;">${e.source}</span></td>
+      <td><span style="font-family:var(--mono);font-weight:600;">${e.target}</span></td>
       <td><span class="badge badge-blue">${e.distance ?? '—'} u.</span></td>
       <td><span class="badge badge-green">✅ Actif</span></td>
     </tr>`).join('');

@@ -7,7 +7,7 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">⚡ Demandes d'Énergie</h1>
-        <p class="page-subtitle">Gestion des demandes de consommation des foyers</p>
+        <p class="page-subtitle" id="demandes-subtitle">Chargement...</p>
       </div>
       <div class="page-actions">
         <select class="form-control btn-sm" id="filter-criticite" onchange="applyFilters()" style="width:150px;">
@@ -40,24 +40,25 @@
               <th>Heure souhaitée</th>
               <th>Criticité</th>
               <th>Statut</th>
-              <th>Actions</th>
+              <th id="th-actions" style="display:none;">Actions</th>
             </tr>
           </thead>
           <tbody id="demandes-tbody">
-            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">
+            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--c-text-3);">
               <span class="spin" style="display:inline-block">⟳</span> Chargement...
             </td></tr>
           </tbody>
         </table>
       </div>
     </div>
-    <div id="demandes-count" style="text-align:right;margin-top:8px;font-size:0.8rem;color:var(--text-muted);"></div>
+    <div id="demandes-count" style="text-align:right;margin-top:8px;font-size:0.8rem;color:var(--c-text-3);"></div>
+
   </main>
 
 </div>
 <div id="toast-container"></div>
 
-<!-- MODAL Nouvelle Demande -->
+<!-- MODAL Nouvelle Demande (tous rôles) -->
 <div class="modal-overlay hidden" id="modal-add-demande">
   <div class="modal">
     <div class="modal-header">
@@ -98,7 +99,7 @@
   </div>
 </div>
 
-<!-- MODAL Modifier Demande -->
+<!-- MODAL Modifier Demande (Responsable uniquement, affiché conditionnellement) -->
 <div class="modal-overlay hidden" id="modal-edit-demande">
   <div class="modal">
     <div class="modal-header">
@@ -145,8 +146,22 @@
 <script>
 Auth.guard();
 
-let allDemandes = [];
+// ── Rôle lu depuis sessionStorage (injecté au login par Node.js) ──────────
+var _user         = Auth.getUser();
+var USER_ROLE     = (_user && _user.role) ? _user.role.toUpperCase() : 'VILLAGEOIS';
+var IS_RESPONSABLE = USER_ROLE === 'RESPONSABLE' || USER_ROLE === 'ADMIN';
 
+// Adapter le sous-titre et la colonne Actions
+document.getElementById('demandes-subtitle').textContent =
+  IS_RESPONSABLE
+    ? 'Gestion des demandes de consommation des foyers'
+    : 'Consultez et soumettez vos demandes de consommation';
+
+if (IS_RESPONSABLE) {
+  document.getElementById('th-actions').style.display = '';
+}
+
+let allDemandes = [];
 const critColors = { CRITIQUE: 'red', HAUTE: 'yellow', NORMALE: 'blue', FAIBLE: 'green' };
 
 async function loadDemandes() {
@@ -154,20 +169,20 @@ async function loadDemandes() {
     allDemandes = await API.demandes.getAll();
     renderStats(allDemandes);
     applyFilters();
-    // Charge les foyers pour le formulaire
+
     const foyers = await API.foyers.getAll();
     const sel = document.getElementById('add-foyer-id');
     sel.innerHTML = '<option value="">— Sélectionner un foyer —</option>' +
       foyers.map(f => `<option value="${f.id}">${escHtml(f.nom)} (${f.type_priorite})</option>`).join('');
   } catch (err) {
-    Toast.error('Erreur: ' + err.message);
+    Toast.error('Erreur chargement : ' + err.message);
   }
 }
 
 function renderStats(demandes) {
   const en_attente = demandes.filter(d => !d.est_acceptee).length;
-  const acceptees  = demandes.filter(d => d.est_acceptee).length;
-  const critiques  = demandes.filter(d => d.niveau_criticite === 'CRITIQUE').length;
+  const acceptees  = demandes.filter(d =>  d.est_acceptee).length;
+  const critiques  = demandes.filter(d =>  d.niveau_criticite === 'CRITIQUE').length;
   const totalKwh   = demandes.reduce((s, d) => s + (d.quantite_kwh || 0), 0);
 
   document.getElementById('demandes-stats').innerHTML = `
@@ -204,13 +219,21 @@ function applyFilters() {
 
   renderTable(filtered);
   document.getElementById('demandes-count').textContent = filtered.length + ' demande(s)';
-  document.getElementById('badge-demandes').textContent = allDemandes.filter(d => !d.est_acceptee).length;
+
+  const badge = document.getElementById('badge-demandes');
+  if (badge) {
+    const nb = allDemandes.filter(d => !d.est_acceptee).length;
+    badge.textContent = nb;
+    badge.style.display = nb > 0 ? 'inline-flex' : 'none';
+  }
 }
 
 function renderTable(demandes) {
   const tbody = document.getElementById('demandes-tbody');
+  const cols  = IS_RESPONSABLE ? 6 : 5;
+
   if (!demandes.length) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="${cols}"><div class="empty-state">
       <div class="empty-icon">⚡</div>
       <div class="empty-title">Aucune demande</div>
       <div class="empty-message">Aucune demande ne correspond aux filtres</div>
@@ -220,28 +243,21 @@ function renderTable(demandes) {
 
   tbody.innerHTML = demandes.map(d => `
     <tr class="fade-in">
-      <td>
-        <span style="font-family:var(--font-mono);font-size:0.8rem;">${d.foyer_id?.substring(0, 12) || '—'}...</span>
-      </td>
-      <td>
-        <span style="font-family:var(--font-mono);font-weight:600;font-size:1rem;">${fmt.kWh(d.quantite_kwh)}</span>
-      </td>
+      <td><span style="font-family:var(--mono);font-size:0.8rem;">${escHtml(d.foyer_nom || (d.foyer_id ? d.foyer_id.substring(0,12)+'...' : '—'))}</span></td>
+      <td><span style="font-family:var(--mono);font-weight:600;font-size:1rem;">${fmt.kWh(d.quantite_kwh)}</span></td>
       <td style="font-size:0.8rem;">${fmt.datetime(d.heure_souhaitee)}</td>
-      <td>
-        <span class="badge badge-${critColors[d.niveau_criticite] || 'gray'}">${d.niveau_criticite || '—'}</span>
-      </td>
-      <td>
-        ${d.est_acceptee
-          ? '<span class="badge badge-green">✅ Acceptée</span>'
-          : '<span class="badge badge-yellow">⏳ En attente</span>'}
-      </td>
+      <td><span class="badge badge-${critColors[d.niveau_criticite] || 'gray'}">${d.niveau_criticite || '—'}</span></td>
+      <td>${d.est_acceptee
+        ? '<span class="badge badge-green">✅ Acceptée</span>'
+        : '<span class="badge badge-yellow">⏳ En attente</span>'}</td>
+      ${IS_RESPONSABLE ? `
       <td>
         <div style="display:flex;gap:6px;">
-          <button class="btn btn-outline btn-sm" onclick="openEdit('${d.id}')">✏️</button>
-          ${!d.est_acceptee ? `<button class="btn btn-success btn-sm" onclick="acceptDemande('${d.id}')">✅</button>` : ''}
-          <button class="btn btn-danger btn-sm" onclick="deleteDemande('${d.id}')">🗑</button>
+          <button class="btn btn-outline btn-sm" title="Modifier"   onclick="openEdit('${d.id}')">✏️</button>
+          ${!d.est_acceptee ? `<button class="btn btn-success btn-sm" title="Accepter" onclick="acceptDemande('${d.id}')">✅</button>` : ''}
+          <button class="btn btn-danger btn-sm"  title="Supprimer" onclick="deleteDemande('${d.id}')">🗑</button>
         </div>
-      </td>
+      </td>` : ''}
     </tr>`).join('');
 }
 
@@ -251,89 +267,65 @@ async function handleAddDemande() {
   const heure     = document.getElementById('add-heure').value;
   const criticite = document.getElementById('add-criticite').value;
 
-  if (!foyerId || !quantite || !heure) {
-    Toast.warning('Foyer, quantité et heure sont obligatoires.');
-    return;
-  }
+  if (!foyerId || !quantite || !heure) { Toast.warning('Foyer, quantité et heure sont obligatoires.'); return; }
 
   setLoading('btn-add-demande', true);
   try {
-    await API.demandes.create({
-      foyer_id: foyerId,
-      quantite_kwh: quantite,
-      heure_souhaitee: heure,
-      niveau_criticite: criticite,
-      est_acceptee: false
-    });
+    await API.demandes.create({ foyer_id: foyerId, quantite_kwh: quantite, heure_souhaitee: heure, niveau_criticite: criticite, est_acceptee: false });
     Toast.success('Demande soumise avec succès !');
     Modal.close('modal-add-demande');
     await loadDemandes();
-  } catch (err) {
-    Toast.error(err.message);
-  } finally {
-    setLoading('btn-add-demande', false);
-  }
+  } catch (err) { Toast.error(err.message); }
+  finally { setLoading('btn-add-demande', false); }
 }
 
-async function openEdit(id) {
-  try {
-    const d = allDemandes.find(x => x.id === id);
-    if (!d) return;
-    document.getElementById('edit-demande-id').value = d.id;
-    document.getElementById('edit-quantite').value   = d.quantite_kwh;
-    document.getElementById('edit-criticite').value  = d.niveau_criticite || 'NORMALE';
-    document.getElementById('edit-heure').value      = d.heure_souhaitee?.substring(0, 16) || '';
-    document.getElementById('edit-acceptee').value   = d.est_acceptee ? '1' : '0';
-    Modal.open('modal-edit-demande');
-  } catch (err) {
-    Toast.error(err.message);
-  }
+function openEdit(id) {
+  if (!IS_RESPONSABLE) return;
+  const d = allDemandes.find(x => x.id === id);
+  if (!d) return;
+  document.getElementById('edit-demande-id').value = d.id;
+  document.getElementById('edit-quantite').value   = d.quantite_kwh;
+  document.getElementById('edit-criticite').value  = d.niveau_criticite || 'NORMALE';
+  document.getElementById('edit-heure').value      = d.heure_souhaitee?.substring(0, 16) || '';
+  document.getElementById('edit-acceptee').value   = d.est_acceptee ? '1' : '0';
+  Modal.open('modal-edit-demande');
 }
 
 async function handleEditDemande() {
-  const id       = document.getElementById('edit-demande-id').value;
-  const quantite = parseFloat(document.getElementById('edit-quantite').value);
-  const heure    = document.getElementById('edit-heure').value;
-  const criticite= document.getElementById('edit-criticite').value;
-  const acceptee = document.getElementById('edit-acceptee').value === '1';
+  if (!IS_RESPONSABLE) return;
+  const id        = document.getElementById('edit-demande-id').value;
+  const quantite  = parseFloat(document.getElementById('edit-quantite').value);
+  const heure     = document.getElementById('edit-heure').value;
+  const criticite = document.getElementById('edit-criticite').value;
+  const acceptee  = document.getElementById('edit-acceptee').value === '1';
 
   setLoading('btn-update-demande', true);
   try {
-    await API.demandes.update(id, {
-      quantite_kwh: quantite,
-      heure_souhaitee: heure,
-      niveau_criticite: criticite,
-      est_acceptee: acceptee
-    });
+    await API.demandes.update(id, { quantite_kwh: quantite, heure_souhaitee: heure, niveau_criticite: criticite, est_acceptee: acceptee });
     Toast.success('Demande mise à jour !');
     Modal.close('modal-edit-demande');
     await loadDemandes();
-  } catch (err) {
-    Toast.error(err.message);
-  } finally {
-    setLoading('btn-update-demande', false);
-  }
+  } catch (err) { Toast.error(err.message); }
+  finally { setLoading('btn-update-demande', false); }
 }
 
 async function acceptDemande(id) {
+  if (!IS_RESPONSABLE) return;
   try {
     await API.demandes.update(id, { est_acceptee: true });
     Toast.success('Demande acceptée !');
     await loadDemandes();
-  } catch (err) {
-    Toast.error(err.message);
-  }
+  } catch (err) { Toast.error(err.message); }
 }
 
 function deleteDemande(id) {
-  confirmDelete('Supprimer cette demande ?', async () => {
+  if (!IS_RESPONSABLE) return;
+  confirmDelete('Supprimer cette demande définitivement ?', async () => {
     try {
       await API.demandes.remove(id);
       Toast.success('Demande supprimée.');
       await loadDemandes();
-    } catch (err) {
-      Toast.error(err.message);
-    }
+    } catch (err) { Toast.error(err.message); }
   });
 }
 
@@ -341,9 +333,7 @@ function escHtml(str) {
   return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// Pré-remplir heure courante
 document.getElementById('add-heure').value = new Date().toISOString().substring(0, 16);
-
 loadDemandes();
 </script>
 </body>

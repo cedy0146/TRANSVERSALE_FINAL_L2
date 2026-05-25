@@ -26,6 +26,14 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
+  <!-- ══ Durée de session : 120 minutes ══════════════════════════════════
+       Par défaut Tomcat = 30 min. Augmenté pour éviter les expirations
+       fréquentes qui provoquaient la redirection vers login.jsp.
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <session-config>
+    <session-timeout>120</session-timeout>
+  </session-config>
+
   <!-- Pages d'erreur -->
   <error-page>
     <error-code>404</error-code>

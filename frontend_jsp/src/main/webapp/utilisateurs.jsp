@@ -33,14 +33,14 @@
             </tr>
           </thead>
           <tbody id="users-tbody">
-            <tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">
+            <tr><td colspan="4" style="text-align:center;padding:40px;color:var(--c-text-3);">
               <span class="spin" style="display:inline-block">⟳</span> Chargement...
             </td></tr>
           </tbody>
         </table>
       </div>
     </div>
-    <div id="users-count" style="text-align:right;margin-top:8px;font-size:0.8rem;color:var(--text-muted);"></div>
+    <div id="users-count" style="text-align:right;margin-top:8px;font-size:0.8rem;color:var(--c-text-3);"></div>
   </main>
 
 </div>
@@ -61,7 +61,7 @@
       <div class="form-group">
         <label class="form-label">Mot de passe *</label>
         <input type="password" class="form-control" id="add-user-password" placeholder="Minimum 8 caractères" required>
-        <small style="color:var(--text-muted);font-size:0.75rem;margin-top:4px;display:block;">
+        <small style="color:var(--c-text-3);font-size:0.75rem;margin-top:4px;display:block;">
           Doit contenir : majuscule, minuscule, chiffre et caractère spécial (!@#$%...)
         </small>
       </div>
@@ -161,14 +161,14 @@ function renderTable(users) {
       <tr class="fade-in">
         <td>
           <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;">
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--c-accent),#64748b);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;">
               ${(u.username || '?')[0].toUpperCase()}
             </div>
             <div>
               <div style="font-weight:600;">${escHtml(u.username)}
                 ${isMe ? '<span class="badge badge-blue" style="margin-left:6px;">Vous</span>' : ''}
               </div>
-              <div style="font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono);">${u.id?.substring(0, 16) || '—'}...</div>
+              <div style="font-size:0.75rem;color:var(--c-text-3);font-family:var(--mono);">${u.id?.substring(0, 16) || '—'}...</div>
             </div>
           </div>
         </td>
@@ -179,13 +179,13 @@ function renderTable(users) {
         </td>
         <td>
           ${u.foyer_id
-            ? `<span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--accent-blue);">${u.foyer_id.substring(0, 16)}...</span>`
-            : '<span style="color:var(--text-muted);font-size:0.8rem;">—</span>'}
+            ? `<span style="font-family:var(--mono);font-size:0.8rem;color:var(--c-accent);">${u.foyer_id.substring(0, 16)}...</span>`
+            : '<span style="color:var(--c-text-3);font-size:0.8rem;">—</span>'}
         </td>
         <td>
           ${!isMe
             ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}', '${escHtml(u.username)}')">🗑 Supprimer</button>`
-            : '<span style="color:var(--text-muted);font-size:0.8rem;">Action non disponible</span>'}
+            : '<span style="color:var(--c-text-3);font-size:0.8rem;">Action non disponible</span>'}
         </td>
       </tr>`;
   }).join('');

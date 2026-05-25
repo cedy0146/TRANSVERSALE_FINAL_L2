@@ -1,3 +1,4 @@
+%>
 <%@ page isELIgnored="true" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="WEB-INF/header.jspf" %>
@@ -21,7 +22,7 @@
 
     <!-- Filtres priorité -->
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-      <span style="font-size:0.8rem;color:var(--text-secondary);align-self:center;">Filtrer:</span>
+      <span style="font-size:0.8rem;color:var(--c-text-2);align-self:center;">Filtrer:</span>
       <button class="btn btn-outline btn-sm filter-btn active" onclick="filterByPriority('ALL', this)">Tous</button>
       <button class="btn btn-outline btn-sm filter-btn" onclick="filterByPriority('URGENTE', this)">🔴 Urgente</button>
       <button class="btn btn-outline btn-sm filter-btn" onclick="filterByPriority('HAUTE', this)">🟡 Haute</button>
@@ -42,14 +43,14 @@
             </tr>
           </thead>
           <tbody id="foyers-tbody">
-            <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">
+            <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--c-text-3);">
               <span class="spin" style="display:inline-block;margin-right:8px;">⟳</span>Chargement...
             </td></tr>
           </tbody>
         </table>
       </div>
     </div>
-    <div id="foyers-count" style="text-align:right;margin-top:8px;font-size:0.8rem;color:var(--text-muted);"></div>
+    <div id="foyers-count" style="text-align:right;margin-top:8px;font-size:0.8rem;color:var(--c-text-3);"></div>
 
   </main>
 
@@ -87,7 +88,7 @@
           <label class="form-label">Historique consommation (kWh, séparés par virgule)</label>
           <input type="text" class="form-control" id="add-historique"
                  placeholder="Ex: 5.2, 4.8, 6.1, 5.5">
-          <small style="color:var(--text-muted);font-size:0.75rem;margin-top:4px;display:block;">
+          <small style="color:var(--c-text-3);font-size:0.75rem;margin-top:4px;display:block;">
             Valeurs en kWh pour les derniers jours
           </small>
         </div>
@@ -181,19 +182,19 @@ function renderTable(data) {
 
   tbody.innerHTML = data.map(f => {
     const histo = Array.isArray(f.consommation_historique) ? f.consommation_historique : [];
-    const histoStr = histo.length ? histo.map(v => v.toFixed(1)).join(', ') + ' kWh' : '<em style="color:var(--text-muted);">Aucun</em>';
+    const histoStr = histo.length ? histo.map(v => v.toFixed(1)).join(', ') + ' kWh' : '<em style="color:var(--c-text-3);">Aucun</em>';
     return `
       <tr class="fade-in">
         <td>
           <div style="font-weight:600;">${escHtml(f.nom)}</div>
-          <div style="font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono);">${f.id?.substring(0, 16) || '—'}...</div>
+          <div style="font-size:0.75rem;color:var(--c-text-3);font-family:var(--mono);">${f.id?.substring(0, 16) || '—'}...</div>
         </td>
         <td>${priorityBadge[f.type_priorite] || priorityBadge.NORMALE}</td>
         <td>
-          <span style="font-family:var(--font-mono);font-weight:600;color:${f.jours_sans_electricite > 7 ? 'var(--accent-red)' : 'var(--text-primary)'}">
+          <span style="font-family:var(--mono);font-weight:600;color:${f.jours_sans_electricite > 7 ? 'var(--c-danger)' : 'var(--c-text)'}">
             ${f.jours_sans_electricite || 0}
           </span>
-          <span style="color:var(--text-muted);font-size:0.8rem;"> jours</span>
+          <span style="color:var(--c-text-3);font-size:0.8rem;"> jours</span>
         </td>
         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.8rem;">${histoStr}</td>
         <td>

@@ -102,12 +102,17 @@ const Auth = {
     sessionStorage.removeItem('user');
     window.location.href = 'login.jsp';
   },
+  // Corrigé : se base sur sessionStorage rempli par le login Node.js
   guard() {
-    if (!this.getUser()) window.location.href = 'login.jsp';
+    var u = this.getUser();
+    // Valide si on a un username réel stocké par le login
+    if (!u || !u.username) {
+      window.location.href = 'login.jsp';
+    }
   },
   isAdmin() {
     const u = this.getUser();
-    return u && u.role === 'RESPONSABLE';
+    return u && (u.role === 'RESPONSABLE' || u.role === 'ADMIN');
   }
 };
 

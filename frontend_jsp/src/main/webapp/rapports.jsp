@@ -1,3 +1,4 @@
+%>
 <%@ page isELIgnored="true" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="WEB-INF/header.jspf" %>
@@ -33,14 +34,14 @@
             </tr>
           </thead>
           <tbody id="rapports-tbody">
-            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--c-text-3);">
               <span class="spin" style="display:inline-block">⟳</span> Chargement...
             </td></tr>
           </tbody>
         </table>
       </div>
     </div>
-    <div id="rapport-count" style="text-align:right;margin-top:8px;font-size:0.8rem;color:var(--text-muted);"></div>
+    <div id="rapport-count" style="text-align:right;margin-top:8px;font-size:0.8rem;color:var(--c-text-3);"></div>
   </main>
 
 <!-- MODAL Détail Rapport -->
@@ -120,10 +121,10 @@ function renderTable(rapports) {
     const variation = r.batterie_fin - r.batterie_debut;
     return `
       <tr class="fade-in">
-        <td><span style="font-family:var(--font-mono);font-size:0.8rem;">${r.id?.substring(0, 14) || '—'}...</span></td>
-        <td><span style="font-family:var(--font-mono);font-weight:600;">${fmt.kWh(r.consommation_totale)}</span></td>
-        <td><span style="font-family:var(--font-mono);">${fmt.wh(r.batterie_debut)}</span></td>
-        <td><span style="font-family:var(--font-mono);">${fmt.wh(r.batterie_fin)}</span></td>
+        <td><span style="font-family:var(--mono);font-size:0.8rem;">${r.id?.substring(0, 14) || '—'}...</span></td>
+        <td><span style="font-family:var(--mono);font-weight:600;">${fmt.kWh(r.consommation_totale)}</span></td>
+        <td><span style="font-family:var(--mono);">${fmt.wh(r.batterie_debut)}</span></td>
+        <td><span style="font-family:var(--mono);">${fmt.wh(r.batterie_fin)}</span></td>
         <td>
           <span class="badge ${variation >= 0 ? 'badge-green' : 'badge-red'}">
             ${variation >= 0 ? '+' : ''}${fmt.wh(variation)}
@@ -150,24 +151,24 @@ async function voirDetail(id) {
     const alertes = Array.isArray(r.alertes) ? r.alertes : (typeof r.alertes === 'string' ? JSON.parse(r.alertes || '[]') : []);
     document.getElementById('rapport-detail-body').innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-        <div style="background:var(--bg-secondary);padding:14px;border-radius:var(--radius-sm);">
-          <div style="font-size:0.75rem;color:var(--text-muted);">Consommation totale</div>
-          <div style="font-size:1.4rem;font-weight:700;font-family:var(--font-mono);">${fmt.kWh(r.consommation_totale)}</div>
+        <div style="background:var(--c-surface-2);padding:14px;border-radius:var(--radius-sm);">
+          <div style="font-size:0.75rem;color:var(--c-text-3);">Consommation totale</div>
+          <div style="font-size:1.4rem;font-weight:700;font-family:var(--mono);">${fmt.kWh(r.consommation_totale)}</div>
         </div>
-        <div style="background:var(--bg-secondary);padding:14px;border-radius:var(--radius-sm);">
-          <div style="font-size:0.75rem;color:var(--text-muted);">Batterie début → fin</div>
-          <div style="font-size:1rem;font-weight:700;font-family:var(--font-mono);">${fmt.wh(r.batterie_debut)} → ${fmt.wh(r.batterie_fin)}</div>
+        <div style="background:var(--c-surface-2);padding:14px;border-radius:var(--radius-sm);">
+          <div style="font-size:0.75rem;color:var(--c-text-3);">Batterie début → fin</div>
+          <div style="font-size:1rem;font-weight:700;font-family:var(--mono);">${fmt.wh(r.batterie_debut)} → ${fmt.wh(r.batterie_fin)}</div>
         </div>
       </div>
       <div>
-        <div style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">ALERTES (${alertes.length})</div>
+        <div style="font-size:0.8rem;font-weight:600;color:var(--c-text-2);margin-bottom:8px;">ALERTES (${alertes.length})</div>
         ${alertes.length
           ? alertes.map(a => `<div class="alert alert-warning" style="margin-bottom:8px;"><span class="alert-icon">⚠️</span><div class="alert-body"><div class="alert-message">${typeof a === 'object' ? JSON.stringify(a) : a}</div></div></div>`).join('')
           : '<div class="badge badge-green">Aucune alerte</div>'}
       </div>
       <div style="margin-top:16px;">
-        <div style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">ID RAPPORT</div>
-        <code style="font-family:var(--font-mono);font-size:0.8rem;background:var(--bg-secondary);padding:8px;border-radius:var(--radius-sm);display:block;">${r.id}</code>
+        <div style="font-size:0.8rem;font-weight:600;color:var(--c-text-2);margin-bottom:6px;">ID RAPPORT</div>
+        <code style="font-family:var(--mono);font-size:0.8rem;background:var(--c-surface-2);padding:8px;border-radius:var(--radius-sm);display:block;">${r.id}</code>
       </div>`;
     Modal.open('modal-detail-rapport');
   } catch (err) {
